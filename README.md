@@ -1,5 +1,7 @@
 # ExoTiC-LD
 
+### This package is under development as it is being adapted from [ExoTiC-ISM](https://github.com/Exo-TiC/ExoTiC-ISM). For a current form of the limb-darkening calculator please go to that repository and follow the install and tutorials for use. 
+
 **Exoplanet Timeseries Characterisation - Limb-Darkening**
 
 Limb-darkening package to calculate the coefficients for specific instruments, stars, and wavelength ranges
