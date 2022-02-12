@@ -7,9 +7,14 @@
 Limb-darkening package to calculate the coefficients for specific instruments, stars, and wavelength ranges
 
 This code calculates limb-darkening parameters using a range of functional forms, as outlined in [Claret (2010)](https://ui.adsabs.harvard.edu/abs/2000A%26A...363.1081C/abstract) and [Sing (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...510A..21S/abstract).
-This calculation is computed using 1D Kurucz stellar models (provided on install of this package) or 3D stellar models for a smaller subset of parameters from [Magic et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015A&A...573A..90M/abstract).
+This calculation is computed using 1D Kurucz stellar models or 3D stellar models for a smaller subset of parameters from [Magic et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015A&A...573A..90M/abstract).
 
 This package was built from the original IDL code adapted by Hannah Wakeford and translated into python by Matthew Hill with improvements by Iva Laginja. The git history associated with these steps can be found in the ExoTiC-ISM package from which this is a spin-off repository.
+
+## Data
+To run this package you will need to download the stellar model grids from [zenodo](https://zenodo.org/record/6052611)
+
+<!-- Once downloaded un-zip and alter the filepath indicated in limb_darkening.py -->
 
 ## Supported instruments and gratings
 Current supported instruments and gratings are:  
