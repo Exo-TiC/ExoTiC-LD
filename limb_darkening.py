@@ -24,12 +24,12 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
     Procedure from Sing et al. (2010, A&A, 510, A21).
     Uses 3D limb darkening from Magic et al. (2015, A&A, 573, 90).
     Uses photon FLUX Sum over (lambda*dlamba).
-    :param mode: string; mode to use ('G430L','G750L','G750M', 'G280', 'G102', 'G141', 'NIRSpec_Prism', 'NIRSpec_G395H')
-    :param wsdata: array; data wavelength solution
+    :param mode: string; mode to use Spectroscopic: ('STIS_G430L','STIS_G750L', 'WFC3_G280p1', 'WFC3_G280n1', 'WFC3_G102', 'WFC3_G141', 'NIRSpec_Prism', 'NIRSpec_G395H', 'NIRSpec_G395M', 'NIRSpec_G235H', 'NIRSpec_G235M', 'NIRSpec_G140Hf100', 'NIRSpec_G140Mf100', 'NIRSpec_G140Hf070', 'NIRSpec_G140Mf070', 'NIRISS_SOSSo1', 'NIRISS_SOSSo2', 'NIRCam_F322W2', 'NIRCam_F444', 'MIRI_LRS'), Photometric: ('IRAC_Ch1', 'IRAC_Ch2', 'TESS')
+    :param wsdata: array; data wavelength solution for range required
     :param M_H: float; stellar metallicity
     :param Teff: float; stellar effective temperature (K)
     :param logg: float; stellar gravity
-    :param dirsen: string; path to main limb darkening directory
+    :param dirsen: string; path to main limb darkening directory downloaded from Zenodo V2.1
     :param ld_model: string; '1D' or '3D', makes choice between limb darkening models; default is 1D
     :return: uLD: float; linear limb darkening coefficient
     aLD, bLD: float; quadratic limb darkening coefficients
@@ -54,9 +54,8 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
         MH_ind = M_H_Grid_load[optM]
 
         # Determine which model is to be used, by using the input metallicity M_H to figure out the file name we need
-        direc = 'Kurucz'
         file_list = 'kuruczlist.sav'
-        sav1 = readsav(os.path.join(dirsen, file_list))
+        sav1 = readsav(os.path.join(direc, file_list))
         model = bytes.decode(sav1['li'][MH_ind])  # Convert object of type "byte" to "string"
 
         # Select Teff and subsequently logg
@@ -230,57 +229,154 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
 
     ### Load response function and interpolate onto kurucz model grid
 
+    ## Spectroscopic Modes
     # FOR Hubble STIS
-    if mode == 'G430L':
-        sav = readsav(os.path.join(dirsen, 'G430L.STIS.sensitivity.sav'))  # wssens,sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
-        wdel = 3
+    if mode == 'STIS_G430L':
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/HST_STIS_G430L_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
 
-    if mode == 'G750M':
-        sav = readsav(os.path.join(dirsen, 'G750M.STIS.sensitivity.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
-        wdel = 0.554
-
-    if mode == 'G750L':
-        sav = readsav(os.path.join(dirsen, 'G750L.STIS.sensitivity.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
-        wdel = 4.882
+    if mode == 'STIS_G750L':
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/HST_STIS_G750L_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
 
     # FOR Hubble WFC3
-    if mode == 'G141':  # http://www.stsci.edu/hst/acs/analysis/reference_files/synphot_tables.html
-        sav = readsav(os.path.join(dirsen, 'G141.WFC3.sensitivity.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
+    if mode == 'WFC3_G141': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/HST_WFC3_G141_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+        
+    if mode == 'WFC3_G102': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/HST_WFC3_G102_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
         wdel = 1
 
-    if mode == 'G102':  # http://www.stsci.edu/hst/acs/analysis/reference_files/synphot_tables.html
-        sav = readsav(os.path.join(dirsen, 'G102.WFC3.sensitivity.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
+    if mode == 'WFC3_G280p1': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/HST_WFC3_G280p1_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
         wdel = 1
 
-    if mode == 'G280':  # http://www.stsci.edu/hst/acs/analysis/reference_files/synphot_tables.html
-        sav = readsav(os.path.join(dirsen, 'G280.WFC3.sensitivity.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
-        wdel = 1
-
-    # FOR Webb NIRSpec
-    if mode == 'NIRSpec_Prism':  # Provided by D.K. Sing (JHU)
-        sav = readsav(os.path.join(dirsen, 'NIRSpec.prism.sensitivity.pandeia.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
-        wdel = 1
-
-    if mode == 'NIRSpec_G395H':  # Provided by D.K. Sing (JHU)
-        sav = readsav(os.path.join(dirsen, 'NIRSpec.G395H.sensitivity.pandeia.sav'))  # wssens, sensitivity
-        wssens = sav['wssens']
-        sensitivity = sav['sensitivity']
+    if mode == 'WFC3_G280n1':  
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/HST_WFC3_G280n1_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
         wdel = 1        
 
+    # FOR Webb NIRSpec
+    if mode == 'NIRSpec_Prism':  
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_prism_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+
+    if mode == 'NIRSpec_G395H': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G395H_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+
+    if mode == 'NIRSpec_G395M': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G395M_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1        
+
+    if mode == 'NIRSpec_G235H': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G235H_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+        
+    if mode == 'NIRSpec_G235M': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G235M_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1        
+        
+    if mode == 'NIRSpec_G140Hf100': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G140H-f100_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+        
+    if mode == 'NIRSpec_G140Mf100': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G140M-f100_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+        
+    if mode == 'NIRSpec_G140Hf070': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G140H-f070_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+        
+    if mode == 'NIRSpec_G140Mf070': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRSpec_G140M-f070_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1
+        
+    # For Webb NIRISS SOSS
+    if mode == 'NIRISS_SOSSo1': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRISS_SOSSo1_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+        
+    if mode == 'NIRISS_SOSSo2': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRISS_SOSSo2_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+
+    # For Webb NIRCam
+    if mode == 'NIRCam_F322W2': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRCam_F322W2_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+        
+    if mode == 'NIRCam_F444': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_NIRCam_F444_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+        
+    # For Webb MIRI
+    if mode == 'MIRI_LRS': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/JWST_MIRI_LRS_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+
+    ## Photometric Modes    
+    # Spitzer IRAC
+    if mode == 'IRAC_Ch1': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/Spitzer_IRAC_Ch1_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+
+    if mode == 'IRAC_Ch2': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/Spitzer_IRAC_Ch2_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1            
+
+    # TESS    
+    if mode == 'TESS': 
+        sav = pd.read_csv(os.path.join(dirsen,'sensitivity_files/TESS_throughput.csv'))
+        wssens = sav['wave'].values
+        sensitivity = sav['tp'].values
+        wdel = 1    
+        
     widek = np.arange(len(wsdata))
     wsmode = wssens
     wsmode = np.concatenate((np.array([wsmode[0] - wdel - wdel, wsmode[0] - wdel]),
@@ -355,8 +451,6 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
 
     return uLD, c1, c2, c3, c4, cp1, cp2, cp3, cp4, aLD, bLD
 
-
-
 def int_tabulated(X, F, sort=False):
     Xsegments = len(X) - 1
 
@@ -402,15 +496,16 @@ def quadratic_limb_darkening(x, aLD=0.0, bLD=0.0):
     model = 1. - aLD * (1. - x) - bLD * (1. - x) ** (4. / 2.)
     return model
 
+
 if __name__ == '__main__': 
     M_H = 0.1
     Teff = 6545
     logg = 4.2
 
-    grating = 'G141'
-    wsdata = 
+    mode = 'WFC3_G141'
+    wsdata = np.arange(11100,11200,0.5)
 
-    dirsen = ''
+    dirsen = '/Users/iz19726/Downloads/LD_data/' #Where the Zenodo Download has been placed
     ld_model = '1D'
 
-    limb_dark_fit(grating, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
+    limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
