@@ -17,9 +17,16 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
     Calculates stellar limb-darkening coefficients for a given wavelength bin.
 
     Modes Currently Supported:
+    Spectroscopic:
     HST STIS G750L, G750M, G430L gratings
-    HST WFC3 UVIS/G280, IR/G102, IR/G141 grisms
-    JWST NIRSpec Prism, G395H
+    HST WFC3 UVIS/G280+1, UVIS/G280-1, IR/G102, IR/G141 grisms
+    JWST NIRSpec Prism, G395H, G395M, G235H, G235M, G140H-f100, G140M-f100, G140H-f070, G140M-f070
+    JWST NIRISS SOSSo1, SOSSo2
+    JWST NIRCam F322W2, F444
+    JWST MIRI LRS
+    Photometric:
+    TESS
+    Spitzer IRAC Ch1 (3.6 microns), Ch2 (4.5 microns)
 
     Procedure from Sing et al. (2010, A&A, 510, A21).
     Uses 3D limb darkening from Magic et al. (2015, A&A, 573, 90).
