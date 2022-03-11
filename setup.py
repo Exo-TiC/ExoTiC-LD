@@ -3,13 +3,14 @@ from setuptools import setup
 
 setup(
     name='exotic-ld',
-    version='1.0',
+    version='1.0.1',
     author='Hannah R Wakeford',
     author_email='hannah.wakeford@bristol.ac.uk',
     url='https://github.com/Exo-TiC/ExoTiC-LD',
     license='MIT',
     packages=['exotic_ld'],
     description='ExoTiC limb-darkening calculator',
+    long_description=open("README.md").read(),
     package_data={
         '': ['README.md', 'LICENSE']
     },
