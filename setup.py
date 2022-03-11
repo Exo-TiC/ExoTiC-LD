@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='exotic-ld',
-    version='1.0.1',
+    version='1.0.0',
     author='Hannah R Wakeford',
     author_email='hannah.wakeford@bristol.ac.uk',
     url='https://github.com/Exo-TiC/ExoTiC-LD',
