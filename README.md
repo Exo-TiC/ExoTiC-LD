@@ -12,18 +12,23 @@ This calculation is computed using 1D Kurucz stellar models or 3D stellar models
 This package was built from the original IDL code adapted by Hannah Wakeford and translated into python by Matthew Hill with improvements by Iva Laginja. The git history associated with these steps can be found in the ExoTiC-ISM package from which this is a spin-off repository.
 
 ## Data
-To run this package you will need to download the stellar model grids from [zenodo](https://zenodo.org/record/6052611)
+To run this package you will need to download the stellar model grids and supported instrument information from [ExoTiC-LD_data on zenodo](https://zenodo.org/record/6344946#.YistRy-l2ik)
 
 <!-- Once downloaded un-zip and alter the filepath indicated in limb_darkening.py -->
 
 ## Supported instruments and gratings
 Current supported instruments and gratings are:  
 
-**Hubble** *STIS*: G430L, G750L gratings
-
-**Hubble** *WFC3*: IR/G102, IR/G141, UVIS/G280 grisms
-
-**Webb** *NIRSpec*: Prism, G395H
+# Spectroscopic:
+**Hubble** *STIS*: G750L, G750M, G430L gratings
+**Hubble** *WFC3*: UVIS/G280+1, UVIS/G280-1, IR/G102, IR/G141 grisms
+**Webb** *NIRSpec*: Prism, G395H, G395M, G235H, G235M, G140H-f100, G140M-f100, G140H-f070, G140M-f070
+**Webb** *NIRSpec*: SOSSo1, SOSSo2
+**Webb** *NIRSpec*: F322W2, F444
+**Webb** *NIRSpec*: LRS
+# Photometric:
+**TESS**
+**Spitzer** *IRAC*: Ch1 (3.6 microns), Ch2 (4.5 microns)
 
 ## About this repository
 
@@ -43,4 +48,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.tx
 * Hannah Wakeford for IDL code and adaption to an independent Python package - [hrwakeford](https://github.com/hrwakeford)
 * Matthew Hill for a functional translation from IDL to Python - [@mattjhill](https://github.com/mattjhill)
 * Iva Laginja for implementing improvements to the script - [@ivalaginja](https://github.com/ivalaginja)
-* David Sing for providing up-to-date JWST sensitivity profiles
+* Natasha Batalha for providing the Webb throughput information from their PandExo package - [@natashabatalha](https://github.com/natashabatalha)
