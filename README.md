@@ -11,11 +11,6 @@ This calculation is computed using 1D Kurucz stellar models or 3D stellar models
 
 This package was built from the original IDL code adapted by Hannah Wakeford and translated into python by Matthew Hill with improvements by Iva Laginja. The git history associated with these steps can be found in the ExoTiC-ISM package from which this is a spin-off repository.
 
-## Data
-To run this package you will need to download the stellar model grids and supported instrument information from [ExoTiC-LD_data on zenodo](https://zenodo.org/record/6344946#.YistRy-l2ik)
-
-<!-- Once downloaded un-zip and alter the filepath indicated in limb_darkening.py -->
-
 ## Install
 
 This package is installable via pip using the following command
@@ -23,7 +18,27 @@ This package is installable via pip using the following command
          pip install exotic-ld
 
 Alternatively you can clone this repository and use this as a standard python script. 
-     
+
+## Data
+To run this package you will need to download the stellar model grids and supported instrument information from [ExoTiC-LD_data on zenodo](https://zenodo.org/record/6344946#.YistRy-l2ik)
+
+<!-- Once downloaded un-zip and alter the filepath indicated in limb_darkening.py -->
+
+## How to Run the code
+
+         M_H = 0.1
+         Teff = 6545
+         logg = 4.2
+
+         mode = 'WFC3_G141'
+         wsdata = np.arange(11100,11200,0.5)
+
+         dirsen = '/Users/iz19726/Downloads/LD_data/' #Where the Zenodo Download is
+         ld_model = '1D'
+
+         limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
+         
+
 ## Supported instruments and gratings
 Current supported instruments and gratings are:  
 
