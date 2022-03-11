@@ -19,16 +19,26 @@ To run this package you will need to download the stellar model grids and suppor
 ## Supported instruments and gratings
 Current supported instruments and gratings are:  
 
-# Spectroscopic:
+### Spectroscopic:
 **Hubble** *STIS*: G750L, G750M, G430L gratings
+
 **Hubble** *WFC3*: UVIS/G280+1, UVIS/G280-1, IR/G102, IR/G141 grisms
+
 **Webb** *NIRSpec*: Prism, G395H, G395M, G235H, G235M, G140H-f100, G140M-f100, G140H-f070, G140M-f070
+
 **Webb** *NIRSpec*: SOSSo1, SOSSo2
+
 **Webb** *NIRSpec*: F322W2, F444
+
 **Webb** *NIRSpec*: LRS
-# Photometric:
+
+### Photometric:
+
 **TESS**
+
 **Spitzer** *IRAC*: Ch1 (3.6 microns), Ch2 (4.5 microns)
+
+<!-- <img src="Supported_spectroscopic_modes.pdf" align="left" /> -->
 
 ## About this repository
 
