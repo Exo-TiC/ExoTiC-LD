@@ -26,14 +26,24 @@ To run this package you will need to download the stellar model grids and suppor
 
 ## How to Run the code
 
+         from exotic_ld import limb_dark_fit
+         import numpy as np
+
+         # Set up the stellar parameters
          M_H = 0.1
          Teff = 6545
          logg = 4.2
 
+         # Set the observing mode
          mode = 'WFC3_G141'
-         wsdata = np.arange(11100,11200,0.5)
+         
+         # Give it the wavelength range you want the limb-darkening to be calculated over
+         wsdata = np.arange(11100,11200,0.5) 
 
-         dirsen = '/Users/iz19726/Downloads/LD_data/' #Where the Zenodo Download is
+         # Tell it where the data from the Zenodo link has been placed
+         dirsen = '/Users/iz19726/Downloads/LD_data/' 
+         
+         # Tell it which stellar model grid you would like to use
          ld_model = '1D'
 
          limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
