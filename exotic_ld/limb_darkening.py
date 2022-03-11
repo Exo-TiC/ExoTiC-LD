@@ -502,17 +502,3 @@ def quadratic_limb_darkening(x, aLD=0.0, bLD=0.0):
     """
     model = 1. - aLD * (1. - x) - bLD * (1. - x) ** (4. / 2.)
     return model
-
-
-if __name__ == '__main__': 
-    M_H = 0.1
-    Teff = 6545
-    logg = 4.2
-
-    mode = 'WFC3_G141'
-    wsdata = np.arange(11100,11200,0.5)
-
-    dirsen = '/Users/iz19726/Downloads/LD_data/' #Where the Zenodo Download has been placed
-    ld_model = '1D'
-
-    limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
