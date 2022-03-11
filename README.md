@@ -65,9 +65,9 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.tx
 
 ### Acknowledgments
 
-* Hannah Wakeford for IDL code and adaption to an independent Python package - [hrwakeford](https://github.com/hrwakeford)
+* Hannah Wakeford for IDL code and adaption to an independent Python package - [@hrwakeford](https://github.com/hrwakeford)
 * Matthew Hill for a functional translation from IDL to Python - [@mattjhill](https://github.com/mattjhill)
 * Iva Laginja for implementing improvements to the script - [@ivalaginja](https://github.com/ivalaginja)
 * Natasha Batalha for providing the Webb throughput information from their PandExo package - [@natashabatalha](https://github.com/natashabatalha)
 * David Grant for making it pip installable - [@davogrant](https://github.com/DavoGrant)
-* Lili Alderson for reviewing and testing - [lili-alderson](https://github.com/lili-alderson)
+* Lili Alderson for reviewing and testing - [@lili-alderson](https://github.com/lili-alderson)
