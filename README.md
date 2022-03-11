@@ -38,7 +38,9 @@ Current supported instruments and gratings are:
 
 **Spitzer** *IRAC*: Ch1 (3.6 microns), Ch2 (4.5 microns)
 
-<!-- <img src="Supported_spectroscopic_modes.pdf" align="left" /> -->
+<img src="Supported_spectroscopic_modes.png" width="80%" />  
+<img src="Supported_photometric_modes.png" width="80%" />  
+
 
 ## About this repository
 
