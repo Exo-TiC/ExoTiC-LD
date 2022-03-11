@@ -16,6 +16,14 @@ To run this package you will need to download the stellar model grids and suppor
 
 <!-- Once downloaded un-zip and alter the filepath indicated in limb_darkening.py -->
 
+## Install
+
+This package is installable via pip using the following command
+
+         pip install exotic-ld
+
+Alternatively you can clone this repository and use this as a standard python script. 
+     
 ## Supported instruments and gratings
 Current supported instruments and gratings are:  
 
@@ -26,11 +34,11 @@ Current supported instruments and gratings are:
 
 **Webb** *NIRSpec*: Prism, G395H, G395M, G235H, G235M, G140H-f100, G140M-f100, G140H-f070, G140M-f070
 
-**Webb** *NIRSpec*: SOSSo1, SOSSo2
+**Webb** *NIRISS*: SOSSo1, SOSSo2
 
-**Webb** *NIRSpec*: F322W2, F444
+**Webb** *NIRCam*: F322W2, F444
 
-**Webb** *NIRSpec*: LRS
+**Webb** *MIRI*: LRS
 
 ### Photometric:
 
@@ -61,3 +69,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.tx
 * Matthew Hill for a functional translation from IDL to Python - [@mattjhill](https://github.com/mattjhill)
 * Iva Laginja for implementing improvements to the script - [@ivalaginja](https://github.com/ivalaginja)
 * Natasha Batalha for providing the Webb throughput information from their PandExo package - [@natashabatalha](https://github.com/natashabatalha)
+* David Grant for making it pip installable - [@davogrant](https://github.com/DavoGrant)
+* Lili Alderson for reviewing and testing - [lili-alderson](https://github.com/lili-alderson)
