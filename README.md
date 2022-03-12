@@ -1,15 +1,13 @@
 # ExoTiC-LD
 
-<!-- ### This package is under development as it is being adapted from [ExoTiC-ISM](https://github.com/Exo-TiC/ExoTiC-ISM). For a current form of the limb-darkening calculator please go to that repository and follow the install and tutorials for use.  -->
-
 **Exoplanet Timeseries Characterisation - Limb-Darkening**
 
-Limb-darkening package to calculate the coefficients for specific instruments, stars, and wavelength ranges
+Limb-darkening package to calculate the coefficients for specific instruments, stars, and wavelength ranges.
 
 This code calculates limb-darkening parameters using a range of functional forms, as outlined in [Claret (2010)](https://ui.adsabs.harvard.edu/abs/2000A%26A...363.1081C/abstract) and [Sing (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...510A..21S/abstract).
 This calculation is computed using 1D Kurucz stellar models or 3D stellar models for a smaller subset of parameters from [Magic et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015A&A...573A..90M/abstract).
 
-This package was built from the original IDL code adapted by Hannah Wakeford and translated into python by Matthew Hill with improvements by Iva Laginja. The git history associated with these steps can be found in the ExoTiC-ISM package from which this is a spin-off repository.
+This package was built from the original IDL code adapted by Hannah Wakeford and translated into python by Matthew Hill with improvements by Iva Laginja. The git history associated with these steps can be found in the [ExoTiC-ISM](https://github.com/Exo-TiC/ExoTiC-ISM) package from which this is a spin-off repository.
 
 ## Install
 
@@ -19,57 +17,71 @@ This package is installable via pip using the following command
 
 Alternatively you can clone this repository and use this as a standard python script. 
 
-## Data
-To run this package you will need to download the stellar model grids and supported instrument information from [ExoTiC-LD_data on zenodo](https://zenodo.org/record/6344946#.YistRy-l2ik)
+		git clone https://github.com/Exo-TiC/ExoTiC-LD.git
 
-<!-- Once downloaded un-zip and alter the filepath indicated in limb_darkening.py -->
+or
+
+		git clone git@github.com:Exo-TiC/ExoTiC-LD.git
+
+Using both 'pip' and 'git' you will need to download the required data detailed below.
+
+## Data
+To run this package you will need to download the stellar model grids and supported instrument information from [ExoTiC-LD_data on zenodo](https://zenodo.org/record/6344946#.YistRy-l2ik).
+
+The location saved locally is then used as an input to the function.
+
 
 ## How to Run the code
 
          from exotic_ld import limb_dark_fit
          import numpy as np
 
+         # Set the observing mode - see below for available doc strings
+         mode = 'WFC3_G141'
+         
+         # Give it the wavelength range you want the limb-darkening to be calculated over
+         # This can be from the data itself, or a pregenerated range like below, but must be a numpy array
+         wsdata = np.arange(11100,11200,0.5) 
+
          # Set up the stellar parameters
          M_H = 0.1
          Teff = 6545
          logg = 4.2
 
-         # Set the observing mode
-         mode = 'WFC3_G141'
-         
-         # Give it the wavelength range you want the limb-darkening to be calculated over
-         wsdata = np.arange(11100,11200,0.5) 
-
          # Tell it where the data from the Zenodo link has been placed
          dirsen = '/Users/iz19726/Downloads/LD_data/' 
          
-         # Tell it which stellar model grid you would like to use
-         ld_model = '1D'
+         # Tell it which stellar model grid you would like to use: '1D' or '3D'
+         ld_model = '1D' 
 
          limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
          
 
-## Supported instruments and gratings
-Current supported instruments and gratings are:  
+## Supported telescope and instrument modes
+Supported instrument mode doc strings:
 
 ### Spectroscopic:
-**Hubble** *STIS*: G750L, G750M, G430L gratings
+**Hubble** *STIS gratings*: 'STIS_G750L', 'STIS_G430L' 
 
-**Hubble** *WFC3*: UVIS/G280+1, UVIS/G280-1, IR/G102, IR/G141 grisms
+**Hubble** *WFC3 grisms*: 'WFC3_G280p1', 'WFC3_G280n1', 'WFC3_G102', 'WFC3_G141'
 
-**Webb** *NIRSpec*: Prism, G395H, G395M, G235H, G235M, G140H-f100, G140M-f100, G140H-f070, G140M-f070
+Note for the WFC3 G280 grism the p1 and n1 signify the positive 1st order spectrum and negative 1st order spectrum for the UVIS grism. 
 
-**Webb** *NIRISS*: SOSSo1, SOSSo2
+**Webb** *NIRSpec*: 'NIRSpec_Prism', 'NIRSpec_G395H', 'NIRSpec_G395M', 'NIRSpec_G235H', 'NIRSpec_G235M', 'NIRSpec_G140Hf100', 'NIRSpec_G140Mf100', 'NIRSpec_G140Hf070', 'NIRSpec_G140Mf070'
 
-**Webb** *NIRCam*: F322W2, F444
+**Webb** *NIRISS*: 'NIRISS_SOSSo1', 'NIRISS_SOSSo2'
 
-**Webb** *MIRI*: LRS
+**Webb** *NIRCam*: 'NIRCam_F322W2', 'NIRCam_F444'
+
+**Webb** *MIRI*: 'MIRI_LRS'
 
 ### Photometric:
 
-**TESS**
+**TESS**: 'TESS'
 
-**Spitzer** *IRAC*: Ch1 (3.6 microns), Ch2 (4.5 microns)
+**Spitzer** *IRAC*: 'IRAC_Ch1', 'IRAC_Ch2'
+
+Where Ch1 (3.6 microns), Ch2 (4.5 microns)
 
 <img src="Supported_spectroscopic_modes.png" width="80%" />  
 <img src="Supported_photometric_modes.png" width="80%" />  
