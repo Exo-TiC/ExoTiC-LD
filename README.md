@@ -54,8 +54,19 @@ The location saved locally is then used as an input to the function.
          # Tell it which stellar model grid you would like to use: '1D' or '3D'
          ld_model = '1D' 
 
-         limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
-         
+         result = limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
+
+The returned result contains the coefficients for all versions of the limb-darkening equation considered
+	 
+	 uLD, c1, c2, c3, c4, cp1, cp2, cp3, cp4, aLD, bLD
+
+where:
+- uLD: float; linear limb darkening coefficient
+- aLD, bLD: float; quadratic limb darkening coefficients
+- cp1, cp2, cp3, cp4: float; three-parameter limb darkening coefficients
+- c1, c2, c3, c4: float; non-linear limb-darkening coefficients
+
+**NOTE:** There is a current issue open to add a selection criteria so that only the desired coefficients are returned. 
 
 ## Supported telescope and instrument modes
 Supported instrument mode doc strings:
@@ -82,6 +93,8 @@ Note for the WFC3 G280 grism the p1 and n1 signify the positive 1st order spectr
 **Spitzer** *IRAC*: 'IRAC_Ch1', 'IRAC_Ch2'
 
 Where Ch1 (3.6 microns), Ch2 (4.5 microns)
+
+**NOTE:** There is a current issue open to also allow for custom instrument throughputs to be implemented. 
 
 <img src="Supported_spectroscopic_modes.png" width="80%" />  
 <img src="Supported_photometric_modes.png" width="80%" />  
