@@ -12,7 +12,7 @@ from astropy.modeling.models import custom_model
 from astropy.modeling.fitting import LevMarLSQFitter
 
 
-def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
+def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D', custom_wave=None, custom_sen=None):
     """
     Calculates stellar limb-darkening coefficients for a given wavelength bin.
 
@@ -27,17 +27,20 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
     Photometric:
     TESS
     Spitzer IRAC Ch1 (3.6 microns), Ch2 (4.5 microns)
+    Custom throughput model
 
     Procedure from Sing et al. (2010, A&A, 510, A21).
     Uses 3D limb darkening from Magic et al. (2015, A&A, 573, 90).
     Uses photon FLUX Sum over (lambda*dlamba).
-    :param mode: string; mode to use Spectroscopic: ('STIS_G430L','STIS_G750L', 'WFC3_G280p1', 'WFC3_G280n1', 'WFC3_G102', 'WFC3_G141', 'NIRSpec_Prism', 'NIRSpec_G395H', 'NIRSpec_G395M', 'NIRSpec_G235H', 'NIRSpec_G235M', 'NIRSpec_G140Hf100', 'NIRSpec_G140Mf100', 'NIRSpec_G140Hf070', 'NIRSpec_G140Mf070', 'NIRISS_SOSSo1', 'NIRISS_SOSSo2', 'NIRCam_F322W2', 'NIRCam_F444', 'MIRI_LRS'), Photometric: ('IRAC_Ch1', 'IRAC_Ch2', 'TESS')
+    :param mode: string; mode to use Spectroscopic: ('STIS_G430L','STIS_G750L', 'WFC3_G280p1', 'WFC3_G280n1', 'WFC3_G102', 'WFC3_G141', 'NIRSpec_Prism', 'NIRSpec_G395H', 'NIRSpec_G395M', 'NIRSpec_G235H', 'NIRSpec_G235M', 'NIRSpec_G140Hf100', 'NIRSpec_G140Mf100', 'NIRSpec_G140Hf070', 'NIRSpec_G140Mf070', 'NIRISS_SOSSo1', 'NIRISS_SOSSo2', 'NIRCam_F322W2', 'NIRCam_F444', 'MIRI_LRS'), Photometric: ('IRAC_Ch1', 'IRAC_Ch2', 'TESS'), Custom: ('Custom')
     :param wsdata: array; data wavelength solution for range required
     :param M_H: float; stellar metallicity
     :param Teff: float; stellar effective temperature (K)
     :param logg: float; stellar gravity
     :param dirsen: string; path to main limb darkening directory downloaded from Zenodo V2.1
     :param ld_model: string; '1D' or '3D', makes choice between limb darkening models; default is 1D
+    ;optional param custom_wave: array; wavelength array for custom throughput profile
+    ;optional param custom_sen: array; throughput for custom instrument profile (values between 0 and 1)
     :return: uLD: float; linear limb darkening coefficient
     aLD, bLD: float; quadratic limb darkening coefficients
     cp1, cp2, cp3, cp4: float; three-parameter limb darkening coefficients
@@ -234,7 +237,7 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
 
         # Passed on to main body of function are: ws, fcalc, phot1, mu
 
-    ### Load response function and interpolate onto kurucz model grid
+    ### Load response function and interpolate onto stellar model grid
 
     ## Spectroscopic Modes
     # FOR Hubble STIS
@@ -384,6 +387,14 @@ def limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D'):
         sensitivity = sav['tp'].values
         wdel = 1    
         
+    ## Custom Mode
+    # Custom profile
+    if mode == 'Custom':
+        print('You are using a custom throughput profile from {} to {}'.format(custom_wave[0],custom_wave[-1]))
+        wssens = custom_wave
+        sensitivity = custom_sen
+        wdel = 1
+
     widek = np.arange(len(wsdata))
     wsmode = wssens
     wsmode = np.concatenate((np.array([wsmode[0] - wdel - wdel, wsmode[0] - wdel]),

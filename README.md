@@ -4,8 +4,12 @@
 
 Limb-darkening package to calculate the coefficients for specific instruments, stars, and wavelength ranges.
 
+    limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D', custom_wave=None, custom_sen=None)
+
 This code calculates limb-darkening parameters using a range of functional forms, as outlined in [Claret (2010)](https://ui.adsabs.harvard.edu/abs/2000A%26A...363.1081C/abstract) and [Sing (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...510A..21S/abstract).
 This calculation is computed using 1D Kurucz stellar models or 3D stellar models for a smaller subset of parameters from [Magic et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015A&A...573A..90M/abstract).
+
+The user input stellar parameters are used to find the closest match to the available stellar models within the selected ld_model grid. 
 
 This package was built from the original IDL code adapted by Hannah Wakeford and translated into python by Matthew Hill with improvements by Iva Laginja. The git history associated with these steps can be found in the [ExoTiC-ISM](https://github.com/Exo-TiC/ExoTiC-ISM) package from which this is a spin-off repository.
 
@@ -33,28 +37,28 @@ The location saved locally is then used as an input to the function.
 
 ## How to Run the code
 
-         from exotic_ld import limb_dark_fit
-         import numpy as np
+     from exotic_ld import limb_dark_fit
+     import numpy as np
 
-         # Set the observing mode - see below for available doc strings
-         mode = 'WFC3_G141'
-         
-         # Give it the wavelength range you want the limb-darkening to be calculated over
-         # This can be from the data itself, or a pregenerated range like below, but must be a numpy array
-         wsdata = np.arange(11100,11200,0.5) 
+     # Set the observing mode - see below for available doc strings
+     mode = 'WFC3_G141'
+     
+     # Give it the wavelength range you want the limb-darkening to be calculated over
+     # This can be from the data itself, or a pregenerated range like below, but must be a numpy array
+     wsdata = np.arange(11100,11200,0.5) 
 
-         # Set up the stellar parameters
-         M_H = 0.1
-         Teff = 6545
-         logg = 4.2
+     # Set up the stellar parameters
+     M_H = 0.1
+     Teff = 6545
+     logg = 4.2
 
-         # Tell it where the data from the Zenodo link has been placed
-         dirsen = '/Users/iz19726/Downloads/LD_data/' 
-         
-         # Tell it which stellar model grid you would like to use: '1D' or '3D'
-         ld_model = '1D' 
+     # Tell it where the data from the Zenodo link has been placed
+     dirsen = '/Users/iz19726/Downloads/LD_data/' 
+     
+     # Tell it which stellar model grid you would like to use: '1D' or '3D'
+     ld_model = '1D' 
 
-         result = limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
+     result = limb_dark_fit(mode, wsdata, M_H, Teff, logg, dirsen, ld_model='1D')
 
 The returned result contains the coefficients for all versions of the limb-darkening equation considered
 	 
@@ -67,6 +71,8 @@ where:
 - c1, c2, c3, c4: float; non-linear limb-darkening coefficients
 
 **NOTE:** There is a current issue open to add a selection criteria so that only the desired coefficients are returned. 
+
+To use a custom throughput profile please see below for the additional inputs required.
 
 ## Supported telescope and instrument modes
 Supported instrument mode doc strings:
@@ -94,7 +100,14 @@ Note for the WFC3 G280 grism the p1 and n1 signify the positive 1st order spectr
 
 Where Ch1 (3.6 microns), Ch2 (4.5 microns)
 
-**NOTE:** There is a current issue open to also allow for custom instrument throughputs to be implemented. 
+### Custom profile:
+
+**Custom**: 'Custom'
+
+Using this keyword also requires you to use the following arguments:
+
+    custom_wave = np.array([wavelengths in angstroms])
+    custom_sen = np.array([throughput in values between 0 and 1])
 
 <img src="Supported_spectroscopic_modes.png" width="80%" />  
 <img src="Supported_photometric_modes.png" width="80%" />  
