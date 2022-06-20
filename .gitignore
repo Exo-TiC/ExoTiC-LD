@@ -33,3 +33,7 @@ tags
 vendor.tags
 tmtagsHistory
 .bundle
+
+# OS Generated Files #
+######################
+data/
