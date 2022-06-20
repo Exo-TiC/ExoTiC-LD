@@ -420,7 +420,12 @@ class StellarLimbDarkening(object):
         # Fit linear limb-darkening law.
         fitter = LevMarLSQFitter()
         corot_4_param = nonlinear_limb_darkening()
-        corot_4_param = fitter(corot_4_param, mu, intensity)
+        try:
+            corot_4_param = fitter(corot_4_param, mu, intensity)
+        except Exception as err:
+            print(mu)
+            print(intensity)
+            exit()
 
         return corot_4_param.parameters
 
@@ -459,11 +464,25 @@ class StellarLimbDarkening(object):
         interpolator = interp1d(bin_wavelengths, bin_mask,
                                 bounds_error=False, fill_value=0)
         bin_mask_interp = interpolator(self._stellar_wavelengths)
+        if np.all(bin_mask_interp == 0):
+            # High resolution, mask interpolated to nothing.
+            # Select nearest point in stellar wavelength grid.
+            mid_bin_wavelengths = np.mean(bin_wavelengths)
+            nearest_stellar_wavelength_idx = (
+                abs(mid_bin_wavelengths - self._stellar_wavelengths)).argmin()
+            bin_mask_interp[nearest_stellar_wavelength_idx] = 1.
 
         # Integrate dmu over spectra computing synthetic photometric points.
         phot = np.zeros(self._stellar_fluxes.shape[0])
         f = self._stellar_wavelengths * sen_interp * bin_mask_interp
         tot = self._int_tabulated(self._stellar_wavelengths, f)
+        if tot == 0.:
+            raise ValueError(
+                'Input wavelength range {}-{} does not overlap with instrument '
+                'mode {} with range {}-{}.'.format(
+                    wavelength_range[0], wavelength_range[-1], mode,
+                    sen_wavelengths[0], sen_wavelengths[-1]))
+
         for i in range(self._mu.shape[0]):
             f_cal = self._stellar_fluxes[i, :]
             phot[i] = self._int_tabulated(
