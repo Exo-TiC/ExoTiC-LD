@@ -93,6 +93,21 @@ class TestLDC(unittest.TestCase):
             sld.compute_4_parameter_non_linear_ld_coeffs(
                 wavelength_range=wr, mode=im)
 
+    def test_custom_mode(self):
+        """ Test custom instrument mode. """
+        # Create custom throughput.
+        custom_wavelengths = np.linspace(10000, 20000, 100)
+        custom_throughput = np.exp(
+            -0.5 * ((custom_wavelengths - 15000.) / 5000.)**2)
+
+        sld = StellarLimbDarkening(
+            M_H=0.1, Teff=6000, logg=3.0, ld_model='3D',
+            ld_data_path='../data')
+        sld.compute_4_parameter_non_linear_ld_coeffs(
+            wavelength_range=[13000, 17000], mode='custom',
+            custom_wavelengths=custom_wavelengths,
+            custom_throughput=custom_throughput)
+
 
 if __name__ == '__main__':
     unittest.main()

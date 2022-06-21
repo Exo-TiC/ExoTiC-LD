@@ -20,11 +20,11 @@ class StellarLimbDarkening(object):
     Parameters
     ----------
     M_H : float
-        Stellar metallicity.
+        Stellar metallicity [dex].
     Teff : float
-        Stellar effective temperature.
+        Stellar effective temperature [kelvin].
     logg : float
-        Stellar log(g).
+        Stellar log(g) [dex].
     ld_model : string, '1D' or '3D'
         Use the 1D or 3D stellar models. Default '1D'.
     ld_data_path : string
@@ -420,12 +420,7 @@ class StellarLimbDarkening(object):
         # Fit linear limb-darkening law.
         fitter = LevMarLSQFitter()
         corot_4_param = nonlinear_limb_darkening()
-        try:
-            corot_4_param = fitter(corot_4_param, mu, intensity)
-        except Exception as err:
-            print(mu)
-            print(intensity)
-            exit()
+        corot_4_param = fitter(corot_4_param, mu, intensity)
 
         return corot_4_param.parameters
 
@@ -472,7 +467,7 @@ class StellarLimbDarkening(object):
                 abs(mid_bin_wavelengths - self._stellar_wavelengths)).argmin()
             bin_mask_interp[nearest_stellar_wavelength_idx] = 1.
 
-        # Integrate dmu over spectra computing synthetic photometric points.
+        # Integrate per mu over spectra computing synthetic photometric points.
         phot = np.zeros(self._stellar_fluxes.shape[0])
         f = self._stellar_wavelengths * sen_interp * bin_mask_interp
         tot = self._int_tabulated(self._stellar_wavelengths, f)
