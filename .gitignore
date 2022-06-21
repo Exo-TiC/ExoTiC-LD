@@ -38,3 +38,4 @@ tmtagsHistory
 ######################
 data/
 *.p
+.ipynb_checkpoints
