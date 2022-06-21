@@ -1,5 +1,5 @@
 __all__ = [
-    "limb_dark_fit",
+    "StellarLimbDarkening",
 ]
 
-from .limb_darkening import limb_dark_fit
+from .ld_computation import StellarLimbDarkening
