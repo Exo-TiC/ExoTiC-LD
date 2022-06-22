@@ -10,7 +10,7 @@ setup(
     license='MIT',
     packages=['exotic_ld'],
     description='ExoTiC limb-darkening calculator',
-    long_description=open("README.md").read(),
+    long_description=open("README.rst").read(),
     package_data={
         '': ['README.md', 'LICENSE']
     },
