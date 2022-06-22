@@ -33,3 +33,9 @@ tags
 vendor.tags
 tmtagsHistory
 .bundle
+
+# OS Generated Files #
+######################
+data/
+*.p
+.ipynb_checkpoints
