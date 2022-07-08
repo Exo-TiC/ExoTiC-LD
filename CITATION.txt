@@ -1,5 +1,7 @@
-ExoTic-LD was developed and packaged from ExoTiC-ISM (Laginja and Wakeford, 2020 [1]) \citep{Laginja2020}. 
-ExoTiC-LD has its own DOI please quote this in your papers when using this package. In addition see the notes below about the description of the scientific data and processes used in the code. 
+DOI citation: https://zenodo.org/badge/latestdoi/458261370
+
+ExoTic-LD was developed and packaged from ExoTiC-ISM (Laginja and Wakeford, 2020 [1]) \citep{Laginja2020}.
+ExoTiC-LD has its own DOI listed above please quote this in your papers when using this package. In addition see the notes below about the description of the scientific data and processes used in the code. 
 
 If you used ExoTiC-LD in your work, please cite the software paper Laginja and Wakeford, 2020 [1] and the version you used in your work [2]. "This research made use of packages associated with the software package ExoTiC-ISM \citep{Laginja2020}"
 
