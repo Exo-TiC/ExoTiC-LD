@@ -8,7 +8,9 @@ ExoTiC-LD
    
 .. image:: https://readthedocs.org/projects/exotic-ld/badge/?version=latest
    :target: https://exotic-ld.readthedocs.io/en/latest/?badge=latest
-
+   
+.. image:: https://zenodo.org/badge/458261370.svg
+   :target: https://zenodo.org/badge/latestdoi/458261370
 |
 
 ::
