@@ -24,7 +24,8 @@ stellar models.
 
 Attribution
 -----------
-
+ExoTiC-LD can be cited using the `Zenodo DOI <https://zenodo.org/badge/latestdoi/458261370>`_
+   
 ExoTiC-LD was built from the original IDL code adapted by Hannah Wakeford
 and translated into python by Matthew Hill with improvements by Iva Laginja,
 and later on by David Grant. Thanks to Natasha Batalha for providing the
