@@ -1,5 +1,15 @@
-If you used ExoTiC-LD in your work, please cite the software paper Laginja and Wakeford, 2020 [1] and the version you used in your work [2]. "This research made use of packages associated with the software package ExoTiC-ISM \citep{Laginja2020}"
+Citation
+========
 
+Hannah Wakeford, & David Grant. (2022). Exo-TiC/ExoTiC-LD: ExoTiC-LD v2.1 Zenodo Release (v2.1.0). Zenodo. https://doi.org/10.5281/zenodo.6809899
+
+
+**Additional notes:**
+ExoTic-LD was developed and packaged from ExoTiC-ISM (Laginja and Wakeford, 2020 [1]) \citep{Laginja2020}.
+If you used ExoTiC-LD in your work, if appropriate please additionally cite the software paper Laginja
+and Wakeford, 2020 [1] and the software version [2].
+"This research made use of packages associated with the software package
+ExoTiC-ISM \citep{Laginja2020}"
 To cite the scientific methods, please cite Claret et al. 2000 [3], Sing et al. 2010 [4].
 If you make use of the 3D stellar models please cite Magic et al. 2015 [5]
 

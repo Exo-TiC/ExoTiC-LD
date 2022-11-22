@@ -34,7 +34,7 @@ Next, import the StellarLimbDarkening class and set the stellar parameters.
 
 Now you can compute the stellar limb-darkening coefficients for the
 limb-darkening law of your choice. You simply have to specify the instrument
-mode and the wavelength range over you require.
+mode and the wavelength range you require.
 
 .. code-block:: python
 
