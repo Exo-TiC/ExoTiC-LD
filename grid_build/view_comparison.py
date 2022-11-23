@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 
 
 # Stellar parameters.
-M_H = 0.4
-Teff = 5000
-logg = 4.2
+M_H = float(0.0)
+Teff = int(4500)
+logg = float(4.5)
 
 # Grids.
 grids = ['kurucz', 'stagger', 'mps1', 'mps2']
@@ -18,6 +18,7 @@ for g in grids:
         "../data", g, "MH{}".format(M_H),
         "teff{}".format(Teff), "logg{}".format(logg),
         "{}_spectra.dat".format(g))
+    print(file_name)
 
     try:
         mu_data = np.loadtxt(file_name, skiprows=1, max_rows=1)

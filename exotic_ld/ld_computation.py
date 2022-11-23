@@ -21,7 +21,7 @@ class StellarLimbDarkening(object):
     ----------
     M_H : float
         Stellar metallicity [dex].
-    Teff : float
+    Teff : int
         Stellar effective temperature [kelvin].
     logg : float
         Stellar log(g) [dex].
@@ -52,32 +52,62 @@ class StellarLimbDarkening(object):
 
     """
 
-    def __init__(self, M_H, Teff, logg, ld_model='1D', ld_data_path=''):
-        self.M_H_input = M_H
-        self.M_H_matched = None
-        self.Teff_input = Teff
-        self.Teff_matched = None
-        self.logg_input = logg
-        self.logg_matched = None
-        self.ld_model = ld_model
+    def __init__(self, M_H=None, Teff=None, logg=None, ld_model="1D",
+                 ld_data_path="", interpolate_type="nearest",
+                 custom_wavelengths=None, custom_mus=None,
+                 custom_stellar_model=None):
+        # Stellar input parameters.
+        self.M_H_input = float(M_H)
+        self.Teff_input = int(Teff)
+        self.logg_input = float(logg)
+
+        # Set stellar grid.
         self.ld_data_path = ld_data_path
-
-        self._stellar_wavelengths = None
-        self._stellar_fluxes = None
-        self._mu = None
         if ld_model == '1D':
-            # 1d data structures.
-            self._match_1d_stellar_model()
-
+            self.ld_model = 'kurucz'
         elif ld_model == '3D':
-            # 3d data structures.
-            self._match_3d_stellar_model()
-
+            self.ld_model = 'stagger'
         else:
-            raise ValueError('ld_model must be either `1D` or `3D`.')
+            self.ld_model = ld_model
+
+        # Load stellar model.
+        self.stellar_wavelengths = None
+        self.mus = None
+        self.stellar_intensities = None
+        if ld_model == 'custom':
+            self.stellar_wavelengths = custom_wavelengths
+            self.mus = custom_mus
+            self.stellar_intensities = custom_stellar_model
+        else:
+            self._build_stellar_model(interpolate_type)
 
     def __repr__(self):
         return 'Stellar limb darkening: {} models.'.format(self.ld_model)
+
+    def _build_stellar_model(self, interpolate_type):
+        """ Build stellar model. """
+        # Nearest or on one.
+        self._read_in_stellar_model()
+
+        # Interpolate, trilinear.
+
+    def _read_in_stellar_model(self):
+        """ Read in the stellar model from disc. """
+        file_name = os.path.join(
+            self.ld_data_path, self.ld_model,
+            "MH{}".format(self.M_H_input),
+            "teff{}".format(self.Teff_input),
+            "logg{}".format(self.logg_input),
+            "{}_spectra.dat".format(self.ld_model))
+
+        try:
+            self.mus = np.loadtxt(file_name, skiprows=1, max_rows=1)
+            stellar_data = np.loadtxt(file_name, skiprows=2)
+            self.stellar_wavelengths = stellar_data[:, 0]
+            self.stellar_intensities = stellar_data[:, 1:].T
+        except FileNotFoundError as err:
+            print('Model not found for stellar grid={} at path={}.'.format(
+                self.ld_model, file_name))
 
     def _match_1d_stellar_model(self):
         """ Find closest matching 1d stellar model. """
@@ -137,11 +167,11 @@ class StellarLimbDarkening(object):
                     self.logg_matched))
 
         # Unpack the data.
-        self._stellar_wavelengths = stellar_data[0].values * 10.
-        self._stellar_fluxes = stellar_data.values.T[1:18]
-        self._stellar_fluxes[0] /= self._stellar_wavelengths**2
-        self._stellar_fluxes[1:17] *= self._stellar_fluxes[0] / 100000.
-        self._mu = np.array(
+        self.stellar_wavelengths = stellar_data[0].values * 10.
+        self.stellar_intensities = stellar_data.values.T[1:18]
+        self.stellar_intensities[0] /= self.stellar_wavelengths**2
+        self.stellar_intensities[1:17] *= self.stellar_intensities[0] / 100000.
+        self.mus = np.array(
             [1.000, .900, .800, .700, .600, .500, .400, .300, .250,
              .200, .150, .125, .100, .075, .050, .025, .010])
 
@@ -202,9 +232,9 @@ class StellarLimbDarkening(object):
                     self.logg_matched))
 
         # Unpack the data.
-        self._stellar_wavelengths = sav['mmd'].lam[0]
-        self._stellar_fluxes = np.array(sav['mmd'].flx.tolist())
-        self._mu = sav['mmd'].mu
+        self.stellar_wavelengths = sav['mmd'].lam[0]
+        self.stellar_intensities = np.array(sav['mmd'].flx.tolist())
+        self.mus = sav['mmd'].mu
 
     def compute_linear_ld_coeffs(self, wavelength_range, mode,
                                  custom_wavelengths=None,
@@ -451,26 +481,26 @@ class StellarLimbDarkening(object):
         # Interpolate throughput onto stellar model wavelengths.
         interpolator = interp1d(sen_wavelengths, sen_throughputs,
                                 bounds_error=False, fill_value=0)
-        sen_interp = interpolator(self._stellar_wavelengths)
+        sen_interp = interpolator(self.stellar_wavelengths)
 
         # Interpolate bin mask onto stellar model wavelengths.
         bin_mask = np.zeros(bin_wavelengths.shape[0])
         bin_mask[2:-2] = 1.
         interpolator = interp1d(bin_wavelengths, bin_mask,
                                 bounds_error=False, fill_value=0)
-        bin_mask_interp = interpolator(self._stellar_wavelengths)
+        bin_mask_interp = interpolator(self.stellar_wavelengths)
         if np.all(bin_mask_interp == 0):
             # High resolution, mask interpolated to nothing.
             # Select nearest point in stellar wavelength grid.
             mid_bin_wavelengths = np.mean(bin_wavelengths)
             nearest_stellar_wavelength_idx = (
-                abs(mid_bin_wavelengths - self._stellar_wavelengths)).argmin()
+                abs(mid_bin_wavelengths - self.stellar_wavelengths)).argmin()
             bin_mask_interp[nearest_stellar_wavelength_idx] = 1.
 
         # Integrate per mu over spectra computing synthetic photometric points.
-        phot = np.zeros(self._stellar_fluxes.shape[0])
-        f = self._stellar_wavelengths * sen_interp * bin_mask_interp
-        tot = self._int_tabulated(self._stellar_wavelengths, f)
+        phot = np.zeros(self.stellar_intensities.shape[0])
+        f = self.stellar_wavelengths * sen_interp * bin_mask_interp
+        tot = self._int_tabulated(self.stellar_wavelengths, f)
         if tot == 0.:
             raise ValueError(
                 'Input wavelength range {}-{} does not overlap with instrument '
@@ -478,16 +508,16 @@ class StellarLimbDarkening(object):
                     wavelength_range[0], wavelength_range[-1], mode,
                     sen_wavelengths[0], sen_wavelengths[-1]))
 
-        for i in range(self._mu.shape[0]):
-            f_cal = self._stellar_fluxes[i, :]
+        for i in range(self.mus.shape[0]):
+            f_cal = self.stellar_intensities[i, :]
             phot[i] = self._int_tabulated(
-                self._stellar_wavelengths, f * f_cal, sort=True) / tot
-        if self.ld_model == '1D':
+                self.stellar_wavelengths, f * f_cal, sort=True) / tot
+        if self.ld_model == '1D' or self.ld_model == 'kurucz':
             yall = phot / phot[0]
         elif self.ld_model == '3D':
             yall = phot / phot[10]
 
-        return self._mu[1:], yall[1:]
+        return self.mus[1:], yall[1:]
 
     def _read_throughput_data(self, mode):
         """ Read in throughput data. """
