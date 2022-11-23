@@ -109,11 +109,11 @@ for Teff_idx, Teff in enumerate(Teff_grid):
             os.makedirs(uld_dir, exist_ok=True)
 
             # Read in stellar model.
-            wv, nu, I_lambda_nu = read_kurucz_model(
+            wv, mu, I_lambda_nu = read_kurucz_model(
                 M_H_idx, M_H, Teff_idx, Teff, logg_idx, logg)
 
             # Write stellar model to uniform format.
-            uld = pd.DataFrame(I_lambda_nu, index=wv, columns=nu)
+            uld = pd.DataFrame(I_lambda_nu, index=wv, columns=mu)
             uld.to_csv(uld_path, index=True, header=True, sep=" ")
             with open(uld_path, "r+") as f:
                 content = f.read()

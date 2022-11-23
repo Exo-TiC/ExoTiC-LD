@@ -4,15 +4,12 @@ import matplotlib.pyplot as plt
 
 
 # Stellar parameters.
-M_H = -1.0
+M_H = 0.4
 Teff = 5000
-logg = 4.0
+logg = 4.2
 
 # Grids.
 grids = ['kurucz', 'stagger', 'mps1', 'mps2']
-
-# Location.
-mu = 0.5
 
 # Plot each available spectrum.
 for g in grids:
@@ -31,11 +28,13 @@ for g in grids:
                Teff, logg, M_H, g))
         continue
 
-    mu_idx = np.argmin(np.abs(mu_data - mu))
-    plt.plot(stellar_data[:, 0], stellar_data[:, 1 + mu_idx], label=g)
+    for mu in np.linspace(1, 0, 5):
+        mu_idx = np.argmin(np.abs(mu_data - mu))
+        plt.plot(stellar_data[:, 0], stellar_data[:, 1 + mu_idx],
+                 label="{} $\mu={}$".format(g, mu))
 
-plt.xlim(0, 35000)
-plt.legend()
-plt.xlabel('Wavelength / $\AA$')
-plt.ylabel('Intensity / $n_{\gamma} s^{-1} cm^{-2} {\AA}^{-1}$')
-plt.show()
+    plt.xlim(0, 35000)
+    plt.legend()
+    plt.xlabel('Wavelength / $\AA$')
+    plt.ylabel('Intensity / $n_{\gamma} s^{-1} cm^{-2} {\AA}^{-1}$')
+    plt.show()
