@@ -1,10 +1,10 @@
 import os
 import numpy as np
 import pandas as pd
-from scipy.io import readsav
 from astropy.modeling.fitting import LevMarLSQFitter
 from scipy.interpolate import interp1d, splev, splrep
 
+from exotic_ld.ld_grids import StellarGrids
 from exotic_ld.ld_laws import quadratic_limb_darkening, \
     nonlinear_limb_darkening
 
@@ -60,6 +60,7 @@ class StellarLimbDarkening(object):
         self.M_H_input = float(M_H)
         self.Teff_input = int(Teff)
         self.logg_input = float(logg)
+        self.interpolate_type = interpolate_type
 
         # Set stellar grid.
         self.ld_data_path = ld_data_path
@@ -70,171 +71,30 @@ class StellarLimbDarkening(object):
         else:
             self.ld_model = ld_model
 
-        # Load stellar model.
+        # Load/build stellar model.
         self.stellar_wavelengths = None
         self.mus = None
         self.stellar_intensities = None
-        if ld_model == 'custom':
+        if self.ld_model == 'custom':
             self.stellar_wavelengths = custom_wavelengths
             self.mus = custom_mus
             self.stellar_intensities = custom_stellar_model
         else:
-            self._build_stellar_model(interpolate_type)
+            self._load_stellar_model()
 
     def __repr__(self):
         return 'Stellar limb darkening: {} models.'.format(self.ld_model)
 
-    def _build_stellar_model(self, interpolate_type):
-        """ Build stellar model. """
-        # Nearest or on one.
-        self._read_in_stellar_model()
+    def _load_stellar_model(self, ):
+        """ Load stellar model. """
+        sg = StellarGrids(self.M_H_input, self.Teff_input, self.logg_input,
+                          self.ld_model, self.ld_data_path, self.interpolate_type)
+        self.stellar_wavelengths, self.mus, self.stellar_intensities = \
+            sg.get_stellar_data()
 
-        # Interpolate, trilinear.
 
-    def _read_in_stellar_model(self):
-        """ Read in the stellar model from disc. """
-        file_name = os.path.join(
-            self.ld_data_path, self.ld_model,
-            "MH{}".format(self.M_H_input),
-            "teff{}".format(self.Teff_input),
-            "logg{}".format(self.logg_input),
-            "{}_spectra.dat".format(self.ld_model))
 
-        try:
-            self.mus = np.loadtxt(file_name, skiprows=1, max_rows=1)
-            stellar_data = np.loadtxt(file_name, skiprows=2)
-            self.stellar_wavelengths = stellar_data[:, 0]
-            self.stellar_intensities = stellar_data[:, 1:].T
-        except FileNotFoundError as err:
-            print('Model not found for stellar grid={} at path={}.'.format(
-                self.ld_model, file_name))
 
-    def _match_1d_stellar_model(self):
-        """ Find closest matching 1d stellar model. """
-        # 1d stellar models directory.
-        stellar_data_path = os.path.join(self.ld_data_path, 'Kurucz')
-        stellar_data_index = os.path.join(stellar_data_path, 'kuruczlist.sav')
-
-        # Define parameter grids available.
-        M_H_grid = np.array(
-            [-0.1, -0.2, -0.3, -0.5, -1.0, -1.5, -2.0, -2.5, -3.0,
-             -3.5, -4.0, -4.5, -5.0, 0.0, 0.1, 0.2, 0.3, 0.5, 1.0])
-        Teff_grid = np.array(
-            [3500, 3750, 4000, 4250, 4500, 4750, 5000,
-             5250, 5500, 5750, 6000, 6250, 6500])
-        logg_grid = np.array([4.0, 4.5, 5.0])
-
-        # Define corresponding model load positions.
-        M_H_grid_load = np.array(
-            [0, 1, 2, 3, 5, 7, 8, 9, 10, 11, 12,
-             13, 14, 17, 20, 21, 22, 23, 24])
-        Teff_logg_grid_load = np.array(
-            [[8, 19, 30, 41, 52, 63, 74, 85, 96, 107, 118, 129, 138],
-             [9, 20, 31, 42, 53, 64, 75, 86, 97, 108, 119, 129, 139],
-             [10, 21, 32, 43, 54, 65, 76, 87, 98, 109, 120, 130, 140]])
-
-        # Select metallicity, Teff, and logg of stellar model.
-        matched_M_H_idx = (abs(self.M_H_input - M_H_grid)).argmin()
-        self.M_H_matched = M_H_grid[matched_M_H_idx]
-        matched_M_H_load = M_H_grid_load[matched_M_H_idx]
-
-        matched_Teff_idx = (abs(self.Teff_input - Teff_grid)).argmin()
-        self.Teff_matched = Teff_grid[matched_Teff_idx]
-
-        matched_logg_idx = (abs(self.logg_input - logg_grid)).argmin()
-        self.logg_matched = logg_grid[matched_logg_idx]
-
-        idl_sf_list = readsav(stellar_data_index)
-        stellar_model_name = bytes.decode(idl_sf_list['li'][matched_M_H_load])
-        load_number = Teff_logg_grid_load[matched_logg_idx][matched_Teff_idx]
-
-        # Read in the stellar model data.
-        n_header_rows = 3
-        n_freq_intervals = 1221
-        line_skip_data = (load_number + 1) * n_header_rows \
-                         + load_number * n_freq_intervals
-        try:
-            stellar_data = pd.read_fwf(
-                os.path.join(stellar_data_path, stellar_model_name),
-                widths=[9, 10, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-                header=None, skiprows=line_skip_data, nrows=n_freq_intervals)
-        except FileNotFoundError as err:
-            raise FileNotFoundError(
-                'File {}, corresponding to M_H={}, Teff={}, and logg={} '
-                'does not exist in the stellar models. \n Please try a '
-                'different combination of stellar parameters.'.format(
-                    stellar_model_name, self.M_H_matched, self.Teff_matched,
-                    self.logg_matched))
-
-        # Unpack the data.
-        self.stellar_wavelengths = stellar_data[0].values * 10.
-        self.stellar_intensities = stellar_data.values.T[1:18]
-        self.stellar_intensities[0] /= self.stellar_wavelengths**2
-        self.stellar_intensities[1:17] *= self.stellar_intensities[0] / 100000.
-        self.mus = np.array(
-            [1.000, .900, .800, .700, .600, .500, .400, .300, .250,
-             .200, .150, .125, .100, .075, .050, .025, .010])
-
-    def _match_3d_stellar_model(self):
-        """ Find closest matching 3d stellar model. """
-        # 3d stellar models directory.
-        stellar_data_path = os.path.join(self.ld_data_path, '3DGrid')
-
-        # Define parameter grids available.
-        M_H_grid = np.array([-3.0, -2.0, -1.0, 0.0])
-        Teff_grid = np.array([4000, 4500, 5000, 5500, 5777, 6000, 6500, 7000])
-        logg_grid = np.array([[1.5, 2.0, 2.5],
-                              [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
-                              [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
-                              [3.0, 3.5, 4.0, 4.5, 5.0],
-                              [4.4],
-                              [3.5, 4.0, 4.5],
-                              [4.0, 4.5],
-                              [4.5]], dtype=object)
-
-        # Define corresponding model load positions.
-        M_H_grid_load = np.array(['30', '20', '10', '00'])
-        Teff_grid_load = np.array(['40', '45', '50', '55', '5777',
-                                   '60', '65', '70'])
-        logg_grid_load = np.array([['15', '20', '25'],
-                                   ['20', '25', '30', '35', '40', '45', '50'],
-                                   ['20', '25', '30', '35', '40', '45', '50'],
-                                   ['30', '35', '40', '45', '50'],
-                                   ['44'],
-                                   ['35', '40', '45'],
-                                   ['40', '45'],
-                                   ['45']], dtype=object)
-
-        # Select metallicity, Teff, and logg of stellar model.
-        matched_M_H_idx = (abs(self.M_H_input - M_H_grid)).argmin()
-        self.M_H_matched = M_H_grid[matched_M_H_idx]
-
-        matched_Teff_idx = (abs(self.Teff_input - Teff_grid)).argmin()
-        self.Teff_matched = Teff_grid[matched_Teff_idx]
-
-        matched_logg_idx = (abs(
-            self.logg_input - np.array(logg_grid[matched_Teff_idx]))).argmin()
-        self.logg_matched = logg_grid[matched_Teff_idx][matched_logg_idx]
-
-        load_file = 'mmu_t' + Teff_grid_load[matched_Teff_idx] \
-                    + 'g' + logg_grid_load[matched_Teff_idx][matched_logg_idx] \
-                    + 'm' + M_H_grid_load[matched_M_H_idx] + 'v05.flx'
-
-        # Read in the stellar model data.
-        try:
-            sav = readsav(os.path.join(stellar_data_path, load_file))
-        except FileNotFoundError as err:
-            raise FileNotFoundError(
-                'File {}, corresponding to M_H={}, Teff={}, and logg={} '
-                'does not exist in the stellar models. \n Please try a '
-                'different combination of stellar parameters.'.format(
-                    load_file, self.M_H_matched, self.Teff_matched,
-                    self.logg_matched))
-
-        # Unpack the data.
-        self.stellar_wavelengths = sav['mmd'].lam[0]
-        self.stellar_intensities = np.array(sav['mmd'].flx.tolist())
-        self.mus = sav['mmd'].mu
 
     def compute_linear_ld_coeffs(self, wavelength_range, mode,
                                  custom_wavelengths=None,

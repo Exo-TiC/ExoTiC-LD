@@ -145,9 +145,17 @@ class TestLDC(unittest.TestCase):
 
     def test_interpolation(self):
         """ TBD. """
+        # test each of these for each grid.
+        # test okay with custom stellar model, ie. no effect.
+        # test on a point, nearest.
+        # test not on a point, nearest.
+        # test on a point, linear.
+        # test not on a point, linear.
+        # test not on a point, linear, and variations to validate expected values.
 
     def test_max_mu_setting(self):
         """ TBD. """
+        # test this works okay.
 
     def _generate_synthetic_stellar_models(self):
         # Generate I(lambda, mu).
@@ -172,7 +180,6 @@ class TestLDC(unittest.TestCase):
         return wvs * 1.e10, ss
 
     # todo: these guys can all use no data, add to .github actions easily.
-    # todo: check interpolate when custom stellar model.
     def test_ld_computation_custom_stellar_and_throughput_model(self):
         """ Test ld computation, custom stellar and throughput model. """
         s_wvs, mus, stellar_intensity = self._generate_synthetic_stellar_models()
