@@ -6,7 +6,7 @@ from exotic_ld.ld_laws import quadratic_ld_law
 
 
 sld = StellarLimbDarkening(
-    M_H=0.01, Teff=4501, logg=4.9, ld_model='kurucz',
+    M_H=-2.1, Teff=5101, logg=4.6, ld_model='stagger',
     ld_data_path='../data', interpolate_type="trilinear",
     custom_wavelengths=None, custom_mus=None,
     custom_stellar_model=None, verbose=True)

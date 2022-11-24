@@ -9,7 +9,7 @@ Teff = int(4500)
 logg = float(4.5)
 
 # Grids.
-grids = ['kurucz', 'stagger', 'mps1', 'mps2']
+grids = ['kurucz', 'mps1', 'mps2']
 
 # Plot each available spectrum.
 for g in grids:
@@ -29,13 +29,13 @@ for g in grids:
                Teff, logg, M_H, g))
         continue
 
-    for mu in np.linspace(1, 0, 5):
+    for mu in np.linspace(1, 0, 1):
         mu_idx = np.argmin(np.abs(mu_data - mu))
         plt.plot(stellar_data[:, 0], stellar_data[:, 1 + mu_idx],
                  label="{} $\mu={}$".format(g, mu))
 
-    plt.xlim(0, 35000)
-    plt.legend()
-    plt.xlabel('Wavelength / $\AA$')
-    plt.ylabel('Intensity / $n_{\gamma} s^{-1} cm^{-2} {\AA}^{-1}$')
-    plt.show()
+plt.xlim(0, 35000)
+plt.legend()
+plt.xlabel('Wavelength / $\AA$')
+plt.ylabel('Intensity / $n_{\gamma} s^{-1} cm^{-2} {\AA}^{-1}$')
+plt.show()
