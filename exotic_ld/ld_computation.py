@@ -55,11 +55,15 @@ class StellarLimbDarkening(object):
     def __init__(self, M_H=None, Teff=None, logg=None, ld_model="1D",
                  ld_data_path="", interpolate_type="nearest",
                  custom_wavelengths=None, custom_mus=None,
-                 custom_stellar_model=None):
+                 custom_stellar_model=None, verbose=False):
+        self.verbose = verbose
+
         # Stellar input parameters.
         self.M_H_input = float(M_H)
         self.Teff_input = int(Teff)
         self.logg_input = float(logg)
+        print("Input stellar parameters are M_H={}, Teff={}, logg={}.".format(
+            self.M_H_input, self.Teff_input, self.logg_input))
         self.interpolate_type = interpolate_type
 
         # Set stellar grid.
@@ -75,7 +79,9 @@ class StellarLimbDarkening(object):
         self.stellar_wavelengths = None
         self.mus = None
         self.stellar_intensities = None
-        if self.ld_model == 'custom':
+        if self.ld_model == "custom":
+            print("Using custom stellar model.")
+            # Todo: validate wvs, mus, intensities in correct shape/order.
             self.stellar_wavelengths = custom_wavelengths
             self.mus = custom_mus
             self.stellar_intensities = custom_stellar_model
@@ -87,10 +93,13 @@ class StellarLimbDarkening(object):
 
     def _load_stellar_model(self, ):
         """ Load stellar model. """
+        print("Loading stellar model from {} grid.".format(self.ld_model))
         sg = StellarGrids(self.M_H_input, self.Teff_input, self.logg_input,
-                          self.ld_model, self.ld_data_path, self.interpolate_type)
+                          self.ld_model, self.ld_data_path, self.interpolate_type,
+                          self.verbose)
         self.stellar_wavelengths, self.mus, self.stellar_intensities = \
             sg.get_stellar_data()
+        print("Stellar model loaded.")
 
 
 
@@ -344,6 +353,7 @@ class StellarLimbDarkening(object):
         sen_interp = interpolator(self.stellar_wavelengths)
 
         # Interpolate bin mask onto stellar model wavelengths.
+        # todo: imporve, why bin mask at all? just slect only wvs required.
         bin_mask = np.zeros(bin_wavelengths.shape[0])
         bin_mask[2:-2] = 1.
         interpolator = interp1d(bin_wavelengths, bin_mask,
