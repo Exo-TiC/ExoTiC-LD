@@ -46,6 +46,7 @@ whole_grid = {4000: {1.5: [-3.0, -2.0, -1.0, 0.0],
                      4.5: [-3.0, -2.0, -1.0, 0.0]},
               7000: {4.5: [-3.0, 0.0]}}
 
+
 # Define corresponding model load positions.
 M_H_grid_load = {-3.0: '30', -2.0: '20', -1.0: '10', 0.0: '00'}
 Teff_grid_load = {4000: '40', 4500: '45', 5000: '50', 5500: '55',
@@ -62,11 +63,12 @@ def read_stagger_model(_M_H, _Teff, _logg):
     ======
         wavelength [Angstroms]
         specific intensity [erg / s / cm^2 / Angstroms * 1e-2]
+
     Return
     ======
         wavelength [angstroms].
         nu  [].
-        photon_intensity  [n_photons / s / cm^2 / Angstroms].
+        photon_intensity  [n_photons / s / cm^2 / Angstrom].
 
     """
     load_file = 'mmu_t' + Teff_grid_load[_Teff] \
@@ -86,6 +88,9 @@ def read_stagger_model(_M_H, _Teff, _logg):
     mu = sav['mmd'].mu
     intensities = np.array(sav['mmd'].flx.tolist()).T
 
+    # Replace nans.
+    intensities[np.isnan(intensities)] = 0.
+
     # Flip data so that mu decreases from left to right.
     # And drop mu=0. point.
     mu = np.flip(mu, axis=0)[:-1]
@@ -96,7 +101,7 @@ def read_stagger_model(_M_H, _Teff, _logg):
     # Convert intensity from energy to number of photons.
     n_photon_intensity = specific_intensity_wv / (ac.h * ac.c / wavelengths[..., np.newaxis])
 
-    # Update units [n_photons / s / cm^2 / Angstroms].
+    # Update units [n_photons / s / cm^2 / Angstrom].
     n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA)
 
     return wavelengths, mu, n_photon_intensity
