@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='exotic-ld',
-    version='2.0.0',
+    version='3.0.0',
     author='David Grant and Hannah R Wakeford',
     author_email='hannah.wakeford@bristol.ac.uk',
     url='https://github.com/Exo-TiC/ExoTiC-LD',
@@ -12,7 +12,7 @@ setup(
     description='ExoTiC limb-darkening calculator',
     long_description=open("README.rst").read(),
     package_data={
-        '': ['README.md', 'LICENSE']
+        '': ['README.rst', 'LICENSE']
     },
     install_requires=['numpy', 'scipy'],
     include_package_data=True,
