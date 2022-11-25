@@ -7,7 +7,7 @@ from exotic_ld.ld_laws import linear_ld_law, quadratic_ld_law, \
 
 
 class TestLDC(unittest.TestCase):
-    """ Test limb-darkening computation. """
+    """ Test limb-darkening computation locally, with data downloaded. """
 
     def __init__(self, *args, **kwargs):
         super(TestLDC, self).__init__(*args, **kwargs)
@@ -44,31 +44,13 @@ class TestLDC(unittest.TestCase):
                             [29650., 41650.], [37040., 52640.],
                             [5670., 11270.]]
 
-        # Constants.
-        self.h = 6.62607004e-34  # Planck's constant [SI].
-        self.c = 2.99792458e8  # Speed of light [SI].
-        self.k_b = 1.38064852e-23  # Boltzmann constant [SI].
-
-    def _run_all_ld_laws(self, sld_object, modes="all", c_wvs=None, c_thp=None):
-        if modes == "all":
-            run_wvs = self.wave_ranges
-            run_modes = self.instrument_modes
-        elif modes == "custom":
-            n_intervals = 5
-            edges = np.linspace(c_wvs[0], c_wvs[-1], n_intervals + 1)
-            run_wvs = np.hstack([edges[:-1, np.newaxis], edges[1:, np.newaxis]])
-            run_modes = ['custom'] * n_intervals
-        else:
-            raise ValueError('Modes not recognised.')
-
+    def _run_all_ld_laws(self, sld_object):
         test_mu = np.linspace(1., 0., 10)
-        for wr, im in zip(run_wvs, run_modes):
+        for wr, im in zip(self.wave_ranges, self.instrument_modes):
 
             # Linear law.
             u1 = sld_object.compute_linear_ld_coeffs(
-                wavelength_range=wr, mode=im,
-                custom_wavelengths=c_wvs,
-                custom_throughput=c_thp)
+                wavelength_range=wr, mode=im)
             I_mu = linear_ld_law(test_mu, u1)
             self.assertEqual(I_mu[0], 1.)
             self.assertFalse(np.any(np.diff(I_mu) > 0.))
@@ -143,56 +125,56 @@ class TestLDC(unittest.TestCase):
             ld_data_path=self.local_data_path)
         self._run_all_ld_laws(sld)
 
-    def test_interpolation(self):
-        """ TBD. """
-        # test each of these for each grid.
-        # test okay with custom stellar model, ie. no effect.
-        # test on a point, nearest.
-        # test not on a point, nearest.
-        # test on a point, linear.
-        # test not on a point, linear.
-        # test not on a point, linear, and variations to validate expected values.
-
-    def test_max_mu_setting(self):
-        """ TBD. """
-        # test this works okay.
-
-    def _generate_synthetic_stellar_models(self):
-        # Generate I(lambda, mu).
-        wvs = np.linspace(0.01e-6, 50e-6, 1000)
-        mus = np.linspace(1., 0.01, 10)
-        temps = np.linspace(5000., 4500., 10)
-        stellar_intensity = []
-        for mu, temp in zip(mus, temps):
-            stellar_intensity.append(self._plancks_law(wvs, temp))
-        return wvs * 1.e10, mus, np.array(stellar_intensity).T
-
-    def _plancks_law(self, wav, temp):
-        a = 2.0 * self.h * self.c**2
-        b = self.h * self.c / (wav * self.k_b * temp)
-        intensity = a / (wav**5 * (np.exp(b) - 1.0))
-        return intensity
-
-    def _generate_synthetic_throughput(self):
-        # Generate S(lambda).
-        wvs = np.linspace(1.e-6, 2.e-6, 100)
-        ss = np.exp(-0.5 * ((wvs - 1.5e-6) / 0.5e-6)**2)
-        return wvs * 1.e10, ss
-
-    # todo: these guys can all use no data, add to .github actions easily.
-    def test_ld_computation_custom_stellar_and_throughput_model(self):
-        """ Test ld computation, custom stellar and throughput model. """
-        s_wvs, mus, stellar_intensity = self._generate_synthetic_stellar_models()
-        t_wvs, throughput = self._generate_synthetic_throughput()
-
+    def test_min_mu_setting(self):
+        """ Test variable min mu for ld fits.. """
         sld = StellarLimbDarkening(
-            M_H=0.0, Teff=4500, logg=4.5,
-            ld_model="custom",
-            custom_wavelengths=s_wvs,
-            custom_mus=mus,
-            custom_stellar_model=stellar_intensity,
+            M_H=0.0, Teff=4500, logg=4.5, ld_model='mps1',
             ld_data_path=self.local_data_path)
-        self._run_all_ld_laws(sld, modes="custom", c_wvs=t_wvs, c_thp=throughput)
+
+        u = sld.compute_quadratic_ld_coeffs(
+            wavelength_range=[10000, 20000], mode='JWST_NIRSpec_Prism',
+            mu_min=0.0)
+        self.assertEqual(type(u), tuple)
+        self.assertEqual(len(u), 2)
+
+        u = sld.compute_quadratic_ld_coeffs(
+            wavelength_range=[10000, 20000], mode='JWST_NIRSpec_Prism',
+            mu_min=0.10)
+        self.assertEqual(type(u), tuple)
+        self.assertEqual(len(u), 2)
+
+        u = sld.compute_quadratic_ld_coeffs(
+            wavelength_range=[10000, 20000], mode='JWST_NIRSpec_Prism',
+            mu_min=0.20)
+        self.assertEqual(type(u), tuple)
+        self.assertEqual(len(u), 2)
+
+    def test_ld_probabilistic(self):
+        """ Test ld computation in probabilistic mode. """
+        sld = StellarLimbDarkening(
+            M_H=0.0, Teff=4500, logg=4.5, ld_model='mps1',
+            ld_data_path=self.local_data_path)
+        u, u_sigma = sld.compute_4_parameter_non_linear_ld_coeffs(
+            wavelength_range=[10000, 20000], mode='JWST_NIRSpec_Prism',
+            return_sigmas=True)
+
+        self.assertEqual(type(u), tuple)
+        self.assertEqual(len(u), 4)
+        self.assertEqual(type(u_sigma), tuple)
+        self.assertEqual(len(u_sigma), 4)
+
+    def test_ld_custom_throughput(self):
+        """ Test ld computation w/ custom throughput. """
+        sld = StellarLimbDarkening(
+            M_H=0.0, Teff=4500, logg=4.5, ld_model='mps1',
+            ld_data_path=self.local_data_path)
+        u = sld.compute_quadratic_ld_coeffs(
+            wavelength_range=[10000, 20000], mode='custom',
+            custom_wavelengths=np.linspace(10000, 20000, 100),
+            custom_throughput=np.ones(100))
+
+        self.assertEqual(type(u), tuple)
+        self.assertEqual(len(u), 2)
 
 
 if __name__ == '__main__':

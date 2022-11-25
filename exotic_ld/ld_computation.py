@@ -59,9 +59,9 @@ class StellarLimbDarkening(object):
         self.verbose = verbose
 
         # Stellar input parameters.
-        self.M_H_input = float(M_H)
-        self.Teff_input = int(Teff)
-        self.logg_input = float(logg)
+        self.M_H_input = float(M_H) if M_H is not None else None
+        self.Teff_input = int(Teff) if Teff is not None else None
+        self.logg_input = float(logg) if logg is not None else None
         self.interpolate_type = interpolate_type
         if self.verbose:
             print("Input stellar parameters are M_H={}, Teff={}, logg={}."
@@ -389,7 +389,9 @@ class StellarLimbDarkening(object):
             s_wavelengths = custom_wavelengths
             s_throughputs = custom_throughput
             if self.verbose:
-                print("Using custom instrument throughput.")
+                print("Using custom instrument throughput with wavelength "
+                      "range {}-{} A.".format(s_wavelengths[0],
+                                              s_wavelengths[-1]))
         else:
             # Read in mode specific throughput.
             s_wavelengths, s_throughputs = self._read_sensitivity_data(mode)
@@ -402,7 +404,8 @@ class StellarLimbDarkening(object):
         wavelength_range = np.sort(np.array(wavelength_range))
         s_mask = np.logical_and(wavelength_range[0] < s_wavelengths,
                                 s_wavelengths < wavelength_range[1])
-        if not np.any(s_mask):
+        if wavelength_range[1] < s_wavelengths[0] \
+                or s_wavelengths[-1] < wavelength_range[0]:
             raise ValueError(
                 "Wavelength range {}-{} A has no overlap with instrument "
                 "mode {}'s range {}-{} A.".format(
@@ -411,7 +414,8 @@ class StellarLimbDarkening(object):
 
         i_mask = np.logical_and(wavelength_range[0] < self.stellar_wavelengths,
                                 self.stellar_wavelengths < wavelength_range[1])
-        if not np.any(i_mask):
+        if wavelength_range[1] < self.stellar_wavelengths[0] \
+                or self.stellar_wavelengths[-1] < wavelength_range[0]:
             raise ValueError(
                 "Wavelength range {}-{} A has no overlap with stellar "
                 "spectra's range {}-{} A.".format(
@@ -428,7 +432,10 @@ class StellarLimbDarkening(object):
             s_interp_func = interp1d(s_wvs, s_thp, kind='linear',
                                      bounds_error=False, fill_value=0.)
         else:
-            s_interp_func = lambda _sw: s_thp[0]
+            mean_wv = np.mean(wavelength_range)
+            match_wv_idx = np.argmin(np.abs(s_wavelengths - mean_wv))
+            match_s = s_throughputs[match_wv_idx]
+            s_interp_func = lambda _sw: np.ones(_sw.shape) * match_s
 
         # Pre-compute Gauss-legendre roots and rescale to lims.
         roots, weights = roots_legendre(500)
@@ -450,7 +457,10 @@ class StellarLimbDarkening(object):
                     i_wvs, i_int[:, mu_idx], kind='linear',
                     bounds_error=False, fill_value=0.)
             else:
-                i_interp_func = lambda _iw: i_int[0, mu_idx]
+                mean_wv = np.mean(wavelength_range)
+                match_wv_idx = np.argmin(np.abs(self.stellar_wavelengths - mean_wv))
+                match_i = self.stellar_intensities[match_wv_idx, mu_idx]
+                i_interp_func = lambda _iw: np.ones(_iw.shape) * match_i
 
             def integrand(_lambda):
                 return s_interp_func(_lambda) * i_interp_func(_lambda)
@@ -459,7 +469,11 @@ class StellarLimbDarkening(object):
             self.I_mu[mu_idx] = (b - a) / 2. * integrand(t).dot(weights)
 
         # Set I(mu=1) = 1.
-        self.I_mu /= self.I_mu[0]
+        if not self.I_mu[0] == 0.:
+            self.I_mu /= self.I_mu[0]
+        else:
+            raise ValueError("Zero intensity in this passband, check your "
+                             "wavelength range is correct and in angstroms.")
 
         if self.verbose:
             print("Integral done for I(mu).")
@@ -471,6 +485,10 @@ class StellarLimbDarkening(object):
         if self.verbose:
             print("Fitting limb-darkening law to {} I(mu) data points "
                   "where {} <= mu <= 1.".format(np.sum(mu_mask), mu_min))
+
+        if np.sum(mu_mask) < 2:
+            raise ValueError('mu_min={} set too high, must be >= 2 mu '
+                             'values remaining.'.format(mu_min))
 
         # Fit limb-darkening law: levenberg marquardt, guess default=1.
         popt, pcov = curve_fit(ld_law_func,
