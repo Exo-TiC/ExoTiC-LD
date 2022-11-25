@@ -1,12 +1,13 @@
 import os
 import numpy as np
 import pandas as pd
-from astropy.modeling.fitting import LevMarLSQFitter
-from scipy.interpolate import interp1d, splev, splrep
+from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
+from scipy.special import roots_legendre
 
 from exotic_ld.ld_grids import StellarGrids
-from exotic_ld.ld_laws import quadratic_limb_darkening, \
-    nonlinear_limb_darkening
+from exotic_ld.ld_laws import linear_ld_law, quadratic_ld_law, \
+    squareroot_ld_law, nonlinear_3param_ld_law, nonlinear_4param_ld_law
 
 
 class StellarLimbDarkening(object):
@@ -62,9 +63,10 @@ class StellarLimbDarkening(object):
         self.M_H_input = float(M_H)
         self.Teff_input = int(Teff)
         self.logg_input = float(logg)
-        print("Input stellar parameters are M_H={}, Teff={}, logg={}.".format(
-            self.M_H_input, self.Teff_input, self.logg_input))
         self.interpolate_type = interpolate_type
+        if self.verbose:
+            print("Input stellar parameters are M_H={}, Teff={}, logg={}."
+                  .format(self.M_H_input, self.Teff_input, self.logg_input))
 
         # Set stellar grid.
         self.ld_data_path = ld_data_path
@@ -79,35 +81,24 @@ class StellarLimbDarkening(object):
         self.stellar_wavelengths = None
         self.mus = None
         self.stellar_intensities = None
+        self.I_mu = None
         if self.ld_model == "custom":
-            print("Using custom stellar model.")
-            # Todo: validate wvs, mus, intensities in correct shape/order.
             self.stellar_wavelengths = custom_wavelengths
             self.mus = custom_mus
             self.stellar_intensities = custom_stellar_model
+            if self.verbose:
+                print("Using custom stellar model.")
         else:
             self._load_stellar_model()
+        self._check_stellar_model()
 
     def __repr__(self):
         return 'Stellar limb darkening: {} models.'.format(self.ld_model)
 
-    def _load_stellar_model(self, ):
-        """ Load stellar model. """
-        print("Loading stellar model from {} grid.".format(self.ld_model))
-        sg = StellarGrids(self.M_H_input, self.Teff_input, self.logg_input,
-                          self.ld_model, self.ld_data_path, self.interpolate_type,
-                          self.verbose)
-        self.stellar_wavelengths, self.mus, self.stellar_intensities = \
-            sg.get_stellar_data()
-        print("Stellar model loaded.")
-
-
-
-
-
     def compute_linear_ld_coeffs(self, wavelength_range, mode,
                                  custom_wavelengths=None,
-                                 custom_throughput=None):
+                                 custom_throughput=None,
+                                 mu_min=0.10, return_sigmas=False):
         """
         Compute the linear limb-darkening coefficients.
 
@@ -146,24 +137,17 @@ class StellarLimbDarkening(object):
             Limb-darkening coefficients for the linear law.
 
         """
-        # Compute the stellar limb-darkening.
-        mu, intensity = self._limb_dark_fit(wavelength_range, mode,
-                                            custom_wavelengths,
-                                            custom_throughput)
+        # Compute I(mu) for a given response function.
+        self._integrate_I_mu(wavelength_range, mode,
+                             custom_wavelengths, custom_throughput)
 
-        # Fit linear limb-darkening law.
-        fitter = LevMarLSQFitter()
-        linear = nonlinear_limb_darkening()
-        linear.c0.fixed = True
-        linear.c2.fixed = True
-        linear.c3.fixed = True
-        linear = fitter(linear, mu, intensity)
-
-        return (linear.c1.value, )
+        # Fit limb-darkening law.
+        return self._fit_ld_law(linear_ld_law, mu_min, return_sigmas)
 
     def compute_quadratic_ld_coeffs(self, wavelength_range, mode,
                                     custom_wavelengths=None,
-                                    custom_throughput=None):
+                                    custom_throughput=None,
+                                    mu_min=0.10, return_sigmas=False):
         """
         Compute the quadratic limb-darkening coefficients.
 
@@ -202,21 +186,66 @@ class StellarLimbDarkening(object):
             Limb-darkening coefficients for the quadratic law.
 
         """
-        # Compute the stellar limb-darkening.
-        mu, intensity = self._limb_dark_fit(wavelength_range, mode,
-                                            custom_wavelengths,
-                                            custom_throughput)
+        # Compute I(mu) for a given response function.
+        self._integrate_I_mu(wavelength_range, mode,
+                             custom_wavelengths, custom_throughput)
 
-        # Fit linear limb-darkening law.
-        fitter = LevMarLSQFitter()
-        quadratic = quadratic_limb_darkening()
-        quadratic = fitter(quadratic, mu, intensity)
+        # Fit limb-darkening law.
+        return self._fit_ld_law(quadratic_ld_law, mu_min, return_sigmas)
 
-        return quadratic.parameters
+    def compute_squareroot_ld_coeffs(self, wavelength_range, mode,
+                                     custom_wavelengths=None,
+                                     custom_throughput=None,
+                                     mu_min=0.10, return_sigmas=False):
+        """
+        Compute the square root limb-darkening coefficients.
+
+        Parameters
+        ----------
+        wavelength_range : array_like, (start, end)
+            Wavelength range over which to compute the limb-darkening
+            coefficients. Wavelengths must be given in angstroms and
+            the values must fall within the supported range of the
+            corresponding instrument mode.
+        mode : string
+            Instrument mode which defines the throughput.
+            Modes supported for Hubble:
+                'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
+                'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.
+            Modes supported for JWST:
+                'JWST_NIRSpec_Prism', 'JWST_NIRSpec_G395H',
+                'JWST_NIRSpec_G395M', 'JWST_NIRSpec_G235H',
+                'JWST_NIRSpec_G235M', 'JWST_NIRSpec_G140H-f100',
+                'JWST_NIRSpec_G140M-f100', 'JWST_NIRSpec_G140H-f070',
+                'JWST_NIRSpec_G140M-f070', 'JWST_NIRISS_SOSSo1',
+                'JWST_NIRISS_SOSSo2', 'JWST_NIRCam_F322W2',
+                'JWST_NIRCam_F444', 'JWST_MIRI_LRS'.
+            Modes for photometry:
+                'Spitzer_IRAC_Ch1', 'Spitzer_IRAC_Ch2', 'TESS'.
+            Alternatively, use 'custom' mode. In this case the custom
+            wavelength and custom throughput must also be specified.
+        custom_wavelengths : array_like, optional
+            Wavelengths corresponding to custom_throughput [angstroms].
+        custom_throughput : array_like, optional
+            Throughputs corresponding to custom_wavelengths.
+
+        Returns
+        -------
+        (c1, c2) : tuple
+            Limb-darkening coefficients for the square root law.
+
+        """
+        # Compute I(mu) for a given response function.
+        self._integrate_I_mu(wavelength_range, mode,
+                             custom_wavelengths, custom_throughput)
+
+        # Fit limb-darkening law.
+        return self._fit_ld_law(squareroot_ld_law, mu_min, return_sigmas)
 
     def compute_3_parameter_non_linear_ld_coeffs(self, wavelength_range, mode,
                                                  custom_wavelengths=None,
-                                                 custom_throughput=None):
+                                                 custom_throughput=None,
+                                                 mu_min=0.10, return_sigmas=False):
         """
         Compute the three-parameter non-linear limb-darkening coefficients.
 
@@ -256,22 +285,17 @@ class StellarLimbDarkening(object):
             non-linear law.
 
         """
-        # Compute the stellar limb-darkening.
-        mu, intensity = self._limb_dark_fit(wavelength_range, mode,
-                                            custom_wavelengths,
-                                            custom_throughput)
+        # Compute I(mu) for a given response function.
+        self._integrate_I_mu(wavelength_range, mode,
+                             custom_wavelengths, custom_throughput)
 
-        # Fit linear limb-darkening law.
-        fitter = LevMarLSQFitter()
-        corot_3_param = nonlinear_limb_darkening()
-        corot_3_param.c0.fixed = True
-        corot_3_param = fitter(corot_3_param, mu, intensity)
-
-        return corot_3_param.parameters[1:]
+        # Fit limb-darkening law.
+        return self._fit_ld_law(nonlinear_3param_ld_law, mu_min, return_sigmas)
 
     def compute_4_parameter_non_linear_ld_coeffs(self, wavelength_range, mode,
                                                  custom_wavelengths=None,
-                                                 custom_throughput=None):
+                                                 custom_throughput=None,
+                                                 mu_min=0.10, return_sigmas=False):
         """
         Compute the four-parameter non-linear limb-darkening coefficients.
 
@@ -311,125 +335,112 @@ class StellarLimbDarkening(object):
             non-linear law.
 
         """
-        # Compute the stellar limb-darkening.
-        mu, intensity = self._limb_dark_fit(wavelength_range, mode,
-                                            custom_wavelengths,
-                                            custom_throughput)
+        # Compute I(mu) for a given response function.
+        self._integrate_I_mu(wavelength_range, mode,
+                             custom_wavelengths, custom_throughput)
 
-        # Fit linear limb-darkening law.
-        fitter = LevMarLSQFitter()
-        corot_4_param = nonlinear_limb_darkening()
-        corot_4_param = fitter(corot_4_param, mu, intensity)
+        # Fit limb-darkening law.
+        return self._fit_ld_law(nonlinear_4param_ld_law, mu_min, return_sigmas)
 
-        return corot_4_param.parameters
+    def _load_stellar_model(self):
+        if self.verbose:
+            print("Loading stellar model from {} grid.".format(self.ld_model))
 
-    def _limb_dark_fit(self, wavelength_range, mode, custom_wavelengths,
-                       custom_throughput):
-        """ Compute stellar limb-darkening coefficients. """
-        if mode == 'custom':
-            # Custom throughput provided.
-            sen_wavelengths = custom_wavelengths
-            sen_throughputs = custom_throughput
-        else:
-            # Read in mode specific throughput.
-            sen_wavelengths, sen_throughputs = \
-                self._read_throughput_data(mode)
+        sg = StellarGrids(self.M_H_input, self.Teff_input,
+                          self.logg_input, self.ld_model, self.ld_data_path,
+                          self.interpolate_type, self.verbose)
+        self.stellar_wavelengths, self.mus, self.stellar_intensities = \
+            sg.get_stellar_data()
 
-        # Pad arrays.
-        sen_wavelengths = self._pad_array(
-            sen_wavelengths,
-            [sen_wavelengths[0] - 2., sen_wavelengths[0] - 1.],
-            [sen_wavelengths[-1] + 1., sen_wavelengths[-1] + 2.])
-        sen_throughputs = self._pad_array(
-            sen_throughputs, [0., 0.], [0., 0.])
-        bin_wavelengths = self._pad_array(
-            wavelength_range,
-            [wavelength_range[0] - 2., wavelength_range[0] - 1.],
-            [wavelength_range[-1] + 1., wavelength_range[-1] + 2.])
+        if self.verbose:
+            print("Stellar model loaded.")
 
-        # Interpolate throughput onto stellar model wavelengths.
-        interpolator = interp1d(sen_wavelengths, sen_throughputs,
-                                bounds_error=False, fill_value=0)
-        sen_interp = interpolator(self.stellar_wavelengths)
+    def _check_stellar_model(self):
+        if not self.stellar_intensities.ndim == 2:
+            raise ValueError('Stellar intensities must be 2D, with shape '
+                             '(n wavelengths, n mu values)')
+        if not self.stellar_wavelengths.shape[0] == \
+               self.stellar_intensities.shape[0]:
+            raise ValueError('Stellar wavelengths must have the same shape as '
+                             'stellar_intensities.shape[0].')
+        if not self.mus.shape[0] == self.stellar_intensities.shape[1]:
+            raise ValueError('mu values must have the same shape as '
+                             'stellar_intensities.shape[1].')
 
-        # Interpolate bin mask onto stellar model wavelengths.
-        # todo: imporve, why bin mask at all? just slect only wvs required.
-        bin_mask = np.zeros(bin_wavelengths.shape[0])
-        bin_mask[2:-2] = 1.
-        interpolator = interp1d(bin_wavelengths, bin_mask,
-                                bounds_error=False, fill_value=0)
-        bin_mask_interp = interpolator(self.stellar_wavelengths)
-        if np.all(bin_mask_interp == 0):
-            # High resolution, mask interpolated to nothing.
-            # Select nearest point in stellar wavelength grid.
-            mid_bin_wavelengths = np.mean(bin_wavelengths)
-            nearest_stellar_wavelength_idx = (
-                abs(mid_bin_wavelengths - self.stellar_wavelengths)).argmin()
-            bin_mask_interp[nearest_stellar_wavelength_idx] = 1.
-
-        # Integrate per mu over spectra computing synthetic photometric points.
-        phot = np.zeros(self.stellar_intensities.shape[0])
-        f = self.stellar_wavelengths * sen_interp * bin_mask_interp
-        tot = self._int_tabulated(self.stellar_wavelengths, f)
-        if tot == 0.:
-            raise ValueError(
-                'Input wavelength range {}-{} does not overlap with instrument '
-                'mode {} with range {}-{}.'.format(
-                    wavelength_range[0], wavelength_range[-1], mode,
-                    sen_wavelengths[0], sen_wavelengths[-1]))
-
-        for i in range(self.mus.shape[0]):
-            f_cal = self.stellar_intensities[i, :]
-            phot[i] = self._int_tabulated(
-                self.stellar_wavelengths, f * f_cal, sort=True) / tot
-        if self.ld_model == '1D' or self.ld_model == 'kurucz':
-            yall = phot / phot[0]
-        elif self.ld_model == '3D':
-            yall = phot / phot[10]
-
-        return self.mus[1:], yall[1:]
-
-    def _read_throughput_data(self, mode):
-        """ Read in throughput data. """
-        sensitivity_file = os.path.join(
+    def _read_sensitivity_data(self, mode):
+        sensitivity_file_path = os.path.join(
             self.ld_data_path,
             'Sensitivity_files/{}_throughput.csv'.format(mode))
-        sensitivity_data = pd.read_csv(sensitivity_file)
+        if not os.path.exists(sensitivity_file_path):
+            raise FileNotFoundError(
+                'Sensitivity_file not found mode={} at path={}.'.format(
+                 mode, sensitivity_file_path))
+
+        sensitivity_data = pd.read_csv(sensitivity_file_path)
         sensitivity_wavelengths = sensitivity_data['wave'].values
         sensitivity_throughputs = sensitivity_data['tp'].values
 
         return sensitivity_wavelengths, sensitivity_throughputs
 
-    def _pad_array(self, array, values_start, values_end):
-        """ Pad array with values. """
-        array = np.concatenate(
-            (np.array(values_start), array, np.array(values_end)))
-        return array
+    def _integrate_I_mu(self, wavelength_range, mode, custom_wavelengths,
+                        custom_throughput):
+        if mode == 'custom':
+            # Custom throughput provided.
+            s_wavelengths = custom_wavelengths
+            s_throughputs = custom_throughput
+        else:
+            # Read in mode specific throughput.
+            s_wavelengths, s_throughputs = self._read_sensitivity_data(mode)
 
-    def _int_tabulated(self, X, F, sort=False):
-        Xsegments = len(X) - 1
+        # Select wavelength range.
+        s_mask = np.logical_and(wavelength_range[0] < s_wavelengths,
+                                s_wavelengths < wavelength_range[1])
+        s_wvs = s_wavelengths[s_mask]
+        s_thp = s_throughputs[s_mask]
 
-        # Sort vectors into ascending order.
-        if not sort:
-            ii = np.argsort(X)
-            X = X[ii]
-            F = F[ii]
+        i_mask = np.logical_and(wavelength_range[0] < self.stellar_wavelengths,
+                                self.stellar_wavelengths < wavelength_range[1])
+        i_wvs = self.stellar_wavelengths[i_mask]
+        i_int = self.stellar_intensities[i_mask]
 
-        while (Xsegments % 4) != 0:
-            Xsegments = Xsegments + 1
+        # Ready sensitivity interpolator.
+        s_interp_func = interp1d(s_wvs, s_thp, kind='linear',
+                                 bounds_error=False, fill_value=0.)
 
-        Xmin = np.min(X)
-        Xmax = np.max(X)
+        # Pre-compute Gauss-legendre roots and rescale to lims.
+        roots, weights = roots_legendre(500)
+        a = wavelength_range[0]
+        b = wavelength_range[1]
+        t = (b - a) / 2 * roots + (a + b) / 2
 
-        # Uniform step size.
-        h = (Xmax + 0.0 - Xmin) / Xsegments
-        # Compute the interpolates at Xgrid.
-        # x values of interpolates >> Xgrid = h * FINDGEN(Xsegments + 1L)+Xmin
-        z = splev(h * np.arange(Xsegments + 1) + Xmin, splrep(X, F))
+        # Iterate mu values computing intensity.
+        self.I_mu = np.zeros(i_int.shape[1])
+        for mu_idx in range(self.mus.shape[0]):
 
-        # Compute the integral using the 5-point Newton-Cotes formula.
-        ii = (np.arange((len(z) - 1) / 4, dtype=int) + 1) * 4
+            # Ready intensity interpolator.
+            i_interp_func = interp1d(i_wvs, i_int[:, mu_idx], kind='linear',
+                                     bounds_error=False, fill_value=0.)
 
-        return np.sum(2.0 * h * (7.0 * (z[ii - 4] + z[ii])
-                                 + 32.0 * (z[ii - 3] + z[ii - 1])
-                                 + 12.0 * z[ii - 2]) / 45.0)
+            def integrand(_lambda):
+                return s_interp_func(_lambda) * i_interp_func(_lambda)
+
+            # Approximate integral.
+            self.I_mu[mu_idx] = (b - a) / 2. * integrand(t).dot(weights)
+
+        # Set I(mu=1) = 1.
+        self.I_mu /= self.I_mu[0]
+
+    def _fit_ld_law(self, ld_law_func, mu_min, return_sigmas):
+        # Truncate mu range to be fitted.
+        mu_mask = self.mus >= mu_min
+
+        # Fit limb-darkening law: levenberg marquardt, guess default=1.
+        popt, pcov = curve_fit(ld_law_func,
+                               self.mus[mu_mask],
+                               self.I_mu[mu_mask],
+                               method='lm')
+
+        if return_sigmas:
+            return tuple(popt), tuple(np.sqrt(np.diag(pcov)))
+        else:
+            return tuple(popt)

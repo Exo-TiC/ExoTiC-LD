@@ -95,14 +95,16 @@ class StellarGrids(object):
                     and self.Teff_input in self._Teff_grid \
                     and self.logg_input in self._logg_grid:
                 # Exact input parameters exist in grid.
-                print("Exact match found.")
+                if self.verbose:
+                    print("Exact match found.")
                 return self._read_in_stellar_model(
                     self.M_H_input, self.Teff_input, self.logg_input)
         else:
             try:
                 if self.M_H_input in self._irregular_grid[
                         self.Teff_input][self.logg_input]:
-                    print("Exact match found.")
+                    if self.verbose:
+                        print("Exact match found.")
                     return self._read_in_stellar_model(
                         self.M_H_input, self.Teff_input, self.logg_input)
                 else:
@@ -113,16 +115,18 @@ class StellarGrids(object):
         if self.interpolate_type == "nearest":
             # Find best-matching grid point to input parameters.
             M_H, Teff, logg = self._get_nearest_grid_point()
-            print("Matched nearest with M_H={}, Teff={}, logg={}.".format(
-                M_H, Teff, logg))
+            if self.verbose:
+                print("Matched nearest with M_H={}, Teff={}, logg={}."
+                      .format(M_H, Teff, logg))
             return self._read_in_stellar_model(M_H, Teff, logg)
 
         elif self.interpolate_type == "trilinear":
             # Trilinear interpolation of cuboid of grid points
             # (x8 vertices) surrounding input parameters.
             x0, x1, y0, y1, z0, z1 = self._get_surrounding_grid_cuboid()
-            print("Trilinear interpolation within M_H={}-{}, Teff={}-{}, "
-                  "logg={}-{}.".format(x0, x1, y0, y1, z0, z1))
+            if self.verbose:
+                print("Trilinear interpolation within M_H={}-{}, Teff={}-{},"
+                      " logg={}-{}.".format(x0, x1, y0, y1, z0, z1))
 
             wvs, mus, c000 = self._read_in_stellar_model(x0, y0, z0)
             _, _, c001 = self._read_in_stellar_model(x0, y0, z1)
