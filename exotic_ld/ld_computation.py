@@ -13,9 +13,8 @@ class StellarLimbDarkening(object):
     """
     Stellar limb darkening class.
 
-    Compute the limb darkening coefficients for either 1D or 3D
-    stellar models. Limb darkening coefficients are available for
-    linear, quadratic, 3-parameter, and 4-parameter laws.
+    Compute the limb-darkening coefficients for a specified
+    stellar model, instrument throughput, and limb-darkening law.
 
     Parameters
     ----------
@@ -25,18 +24,36 @@ class StellarLimbDarkening(object):
         Stellar effective temperature [kelvin].
     logg : float
         Stellar log(g) [dex].
-    ld_model : string, '1D' or '3D'
-        Use the 1D or 3D stellar models. Default '1D'.
+    ld_model : string
+        Choose between 'kurucz', 'stagger', 'mps1', 'mps2', or 'custom'.
+        kurucz are 1D stellar models, can be referenced as '1D'.
+        stagger are 3D stellar models, can be referenced as '3D'.
+        mps1 are the MPS-ATLAS set 1 models. mps2 are the MPS-ATLAS
+        set 2 models. If custom, must also provide custom_wavelengths,
+        custom_mus, and custom_stellar_model.
     ld_data_path : string
         Path to ExoTiC-LD_data directory downloaded from Zenodo. These
-        data include the stellar models and instrument throughputs. See
-        the docs for further details.
-
+        data include the stellar models and instrument throughputs.
+    interpolate_type : string
+        Choose between 'nearest' and 'trilinear'.
+    custom_wavelengths : numpy.ndarray, shape (n,)
+        If ld_model='custom', pass the wavelengths of you stellar model
+        in angstroms.
+    custom_mus : numpy.ndarray, shape (m,)
+        If ld_model='custom', pass the mu values at which you stellar
+        model is defined.
+    custom_stellar_model : numpy.ndarray, shape (n, m)
+        If ld_model='custom', pass the specific intensity of your stellar
+        for each wavelength and mu value. Note specific intensity must
+        be in units of [n_photons / s / cm^2 / Angstrom].
+    verbose : boolean
+        Print information during calculation. Default: False.
 
     Methods
     -------
     compute_linear_ld_coeffs()
     compute_quadratic_ld_coeffs()
+    compute_squareroot_ld_coeffs()
     compute_3_parameter_non_linear_ld_coeffs()
     compute_4_parameter_non_linear_ld_coeffs()
 
@@ -44,7 +61,7 @@ class StellarLimbDarkening(object):
     --------
     >>> from exotic_ld import StellarLimbDarkening
     >>> sld = StellarLimbDarkening(
-            M_H=0.1, Teff=6045, logg=4.2, ld_model='1D',
+            M_H=0.1, Teff=6045, logg=4.2, ld_model='mps1',
             ld_data_path='path/to/ExoTiC-LD_data')
     >>> c1, c2 = sld.compute_quadratic_ld_coeffs(
             wavelength_range=np.array([20000., 30000.]),
@@ -52,7 +69,7 @@ class StellarLimbDarkening(object):
 
     """
 
-    def __init__(self, M_H=None, Teff=None, logg=None, ld_model="1D",
+    def __init__(self, M_H=None, Teff=None, logg=None, ld_model="mps1",
                  ld_data_path="", interpolate_type="nearest",
                  custom_wavelengths=None, custom_mus=None,
                  custom_stellar_model=None, verbose=False):
@@ -129,11 +146,21 @@ class StellarLimbDarkening(object):
             Wavelengths corresponding to custom_throughput [angstroms].
         custom_throughput : array_like, optional
             Throughputs corresponding to custom_wavelengths.
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
 
         Returns
         -------
-        (c1, ) : tuple
-            Limb-darkening coefficients for the linear law.
+        if return_sigmas == False:
+            (c1, ) : tuple
+                Limb-darkening coefficients for the linear law.
+        else:
+            ((c1, ), (c1_sigma, )) : tuple of tuples
+                Limb-darkening coefficients for the linear law
+                and uncertainties on each coefficient.
 
         """
         # Compute I(mu) for a given response function.
@@ -178,11 +205,21 @@ class StellarLimbDarkening(object):
             Wavelengths corresponding to custom_throughput [angstroms].
         custom_throughput : array_like, optional
             Throughputs corresponding to custom_wavelengths.
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
 
         Returns
         -------
-        (c1, c2) : tuple
-            Limb-darkening coefficients for the quadratic law.
+        if return_sigmas == False:
+            (c1, c2) : tuple
+                Limb-darkening coefficients for the quadratic law.
+        else:
+            ((c1, c2), (c1_sigma, c2_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the quadratic law
+                and uncertainties on each coefficient.
 
         """
         # Compute I(mu) for a given response function.
@@ -227,11 +264,21 @@ class StellarLimbDarkening(object):
             Wavelengths corresponding to custom_throughput [angstroms].
         custom_throughput : array_like, optional
             Throughputs corresponding to custom_wavelengths.
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
 
         Returns
         -------
-        (c1, c2) : tuple
-            Limb-darkening coefficients for the square root law.
+        if return_sigmas == False:
+            (c1, c2) : tuple
+                Limb-darkening coefficients for the square root law.
+        else:
+            ((c1, c2), (c1_sigma, c2_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the square root law
+                and uncertainties on each coefficient.
 
         """
         # Compute I(mu) for a given response function.
@@ -276,12 +323,22 @@ class StellarLimbDarkening(object):
             Wavelengths corresponding to custom_throughput [angstroms].
         custom_throughput : array_like, optional
             Throughputs corresponding to custom_wavelengths.
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
 
         Returns
         -------
-        (c1, c2, c3) : tuple
-            Limb-darkening coefficients for the three-parameter
-            non-linear law.
+        if return_sigmas == False:
+            (c1, c2, c3) : tuple
+                Limb-darkening coefficients for the three-parameter
+                non-linear law.
+        else:
+            ((c1, c2, c3), (c1_sigma, c2_sigma, c3_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the three-parameter
+                non-linear law and uncertainties on each coefficient.
 
         """
         # Compute I(mu) for a given response function.
@@ -326,12 +383,23 @@ class StellarLimbDarkening(object):
             Wavelengths corresponding to custom_throughput [angstroms].
         custom_throughput : array_like, optional
             Throughputs corresponding to custom_wavelengths.
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
 
         Returns
         -------
-        (c1, c2, c3, c4) : tuple
-            Limb-darkening coefficients for the four-parameter
-            non-linear law.
+        if return_sigmas == False:
+            (c1, c2, c3, c4) : tuple
+                Limb-darkening coefficients for the three-parameter
+                non-linear law.
+        else:
+            ((c1, c2, c3, c4), (c1_sigma, c2_sigma, c3_sigma, c4_sigma)) :
+                tuple of tuples
+                Limb-darkening coefficients for the four-parameter
+                non-linear law and uncertainties on each coefficient.
 
         """
         # Compute I(mu) for a given response function.
