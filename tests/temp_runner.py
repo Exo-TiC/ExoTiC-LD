@@ -22,7 +22,23 @@ sld = StellarLimbDarkening(
 test_mu = np.linspace(0., 1., 100)
 
 u1, u1_sigma = sld.compute_linear_ld_coeffs(
-    wavelength_range=[9000., 53000.], mode='JWST_NIRSpec_Prism',
+    wavelength_range=[9000., 10000.], mode='JWST_NIRSpec_Prism',
+    mu_min=0.1, return_sigmas=True)
+
+u1_dist = np.random.normal(loc=u1, scale=u1_sigma, size=1000)
+I_mu = linear_ld_law(test_mu[..., np.newaxis], u1_dist)
+I_mu_16p = np.percentile(I_mu, 16., axis=1)
+I_mu_50p = np.percentile(I_mu, 50., axis=1)
+I_mu_84p = np.percentile(I_mu, 84., axis=1)
+plt.scatter(sld.mus, sld.I_mu)
+plt.plot(test_mu, I_mu_50p)
+plt.fill_between(test_mu, I_mu_16p, I_mu_84p)
+plt.xlabel('mu')
+plt.ylim(0, 1.1)
+plt.show()
+
+u1, u1_sigma = sld.compute_linear_ld_coeffs(
+    wavelength_range=[50000., 51000.], mode='JWST_NIRSpec_Prism',
     mu_min=0.1, return_sigmas=True)
 
 u1_dist = np.random.normal(loc=u1, scale=u1_sigma, size=1000)
@@ -38,7 +54,7 @@ plt.ylim(0, 1.1)
 plt.show()
 
 us, us_sigmas = sld.compute_quadratic_ld_coeffs(
-    wavelength_range=[9000., 53000.], mode='JWST_NIRSpec_Prism',
+    wavelength_range=[9000., 10000.], mode='JWST_NIRSpec_Prism',
     mu_min=0.1, return_sigmas=True)
 
 us_dist = np.random.normal(loc=us, scale=us_sigmas, size=(1000, len(us)))
@@ -53,7 +69,7 @@ plt.ylim(0, 1.1)
 plt.show()
 
 us, us_sigmas = sld.compute_4_parameter_non_linear_ld_coeffs(
-    wavelength_range=[9000., 53000.], mode='JWST_NIRSpec_Prism',
+    wavelength_range=[9000., 10000.], mode='JWST_NIRSpec_Prism',
     mu_min=0.1, return_sigmas=True)
 
 us_dist = np.random.normal(loc=us, scale=us_sigmas, size=(1000, len(us)))

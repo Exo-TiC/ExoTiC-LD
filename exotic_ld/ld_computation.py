@@ -388,24 +388,47 @@ class StellarLimbDarkening(object):
             # Custom throughput provided.
             s_wavelengths = custom_wavelengths
             s_throughputs = custom_throughput
+            if self.verbose:
+                print("Using custom instrument throughput.")
         else:
             # Read in mode specific throughput.
             s_wavelengths, s_throughputs = self._read_sensitivity_data(mode)
+            if self.verbose:
+                print("Loading instrument mode={} with wavelength range "
+                      "{}-{} A.".format(mode, s_wavelengths[0],
+                                        s_wavelengths[-1]))
 
         # Select wavelength range.
+        wavelength_range = np.sort(np.array(wavelength_range))
         s_mask = np.logical_and(wavelength_range[0] < s_wavelengths,
                                 s_wavelengths < wavelength_range[1])
-        s_wvs = s_wavelengths[s_mask]
-        s_thp = s_throughputs[s_mask]
+        if not np.any(s_mask):
+            raise ValueError(
+                "Wavelength range {}-{} A has no overlap with instrument "
+                "mode {}'s range {}-{} A.".format(
+                    wavelength_range[0], wavelength_range[1], mode,
+                    s_wavelengths[0], s_wavelengths[-1]))
 
         i_mask = np.logical_and(wavelength_range[0] < self.stellar_wavelengths,
                                 self.stellar_wavelengths < wavelength_range[1])
+        if not np.any(i_mask):
+            raise ValueError(
+                "Wavelength range {}-{} A has no overlap with stellar "
+                "spectra's range {}-{} A.".format(
+                    wavelength_range[0], wavelength_range[1],
+                    self.stellar_wavelengths[0], self.stellar_wavelengths[-1]))
+
+        s_wvs = s_wavelengths[s_mask]
+        s_thp = s_throughputs[s_mask]
         i_wvs = self.stellar_wavelengths[i_mask]
         i_int = self.stellar_intensities[i_mask]
 
         # Ready sensitivity interpolator.
-        s_interp_func = interp1d(s_wvs, s_thp, kind='linear',
-                                 bounds_error=False, fill_value=0.)
+        if s_wvs.shape[0] >= 2:
+            s_interp_func = interp1d(s_wvs, s_thp, kind='linear',
+                                     bounds_error=False, fill_value=0.)
+        else:
+            s_interp_func = lambda _sw: s_thp[0]
 
         # Pre-compute Gauss-legendre roots and rescale to lims.
         roots, weights = roots_legendre(500)
@@ -413,13 +436,21 @@ class StellarLimbDarkening(object):
         b = wavelength_range[1]
         t = (b - a) / 2 * roots + (a + b) / 2
 
+        if self.verbose:
+            print("Integrating I(mu) for wavelength limits of {}-{} A."
+                  .format(a, b))
+
         # Iterate mu values computing intensity.
         self.I_mu = np.zeros(i_int.shape[1])
         for mu_idx in range(self.mus.shape[0]):
 
             # Ready intensity interpolator.
-            i_interp_func = interp1d(i_wvs, i_int[:, mu_idx], kind='linear',
-                                     bounds_error=False, fill_value=0.)
+            if i_wvs.shape[0] >= 2:
+                i_interp_func = interp1d(
+                    i_wvs, i_int[:, mu_idx], kind='linear',
+                    bounds_error=False, fill_value=0.)
+            else:
+                i_interp_func = lambda _iw: i_int[0, mu_idx]
 
             def integrand(_lambda):
                 return s_interp_func(_lambda) * i_interp_func(_lambda)
@@ -430,15 +461,25 @@ class StellarLimbDarkening(object):
         # Set I(mu=1) = 1.
         self.I_mu /= self.I_mu[0]
 
+        if self.verbose:
+            print("Integral done for I(mu).")
+
     def _fit_ld_law(self, ld_law_func, mu_min, return_sigmas):
         # Truncate mu range to be fitted.
         mu_mask = self.mus >= mu_min
+
+        if self.verbose:
+            print("Fitting limb-darkening law to {} I(mu) data points "
+                  "where {} <= mu <= 1.".format(np.sum(mu_mask), mu_min))
 
         # Fit limb-darkening law: levenberg marquardt, guess default=1.
         popt, pcov = curve_fit(ld_law_func,
                                self.mus[mu_mask],
                                self.I_mu[mu_mask],
                                method='lm')
+
+        if self.verbose:
+            print("Fit done, resulting coefficients are {}.".format(popt))
 
         if return_sigmas:
             return tuple(popt), tuple(np.sqrt(np.diag(pcov)))

@@ -4,7 +4,7 @@ from setuptools import setup
 setup(
     name='exotic-ld',
     version='2.0.0',
-    author='Hannah R Wakeford',
+    author='David Grant and Hannah R Wakeford',
     author_email='hannah.wakeford@bristol.ac.uk',
     url='https://github.com/Exo-TiC/ExoTiC-LD',
     license='MIT',
