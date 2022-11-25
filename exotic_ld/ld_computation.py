@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import pandas as pd
 from scipy.optimize import curve_fit
 from scipy.interpolate import interp1d
 from scipy.special import roots_legendre
@@ -376,9 +375,10 @@ class StellarLimbDarkening(object):
                 'Sensitivity_file not found mode={} at path={}.'.format(
                  mode, sensitivity_file_path))
 
-        sensitivity_data = pd.read_csv(sensitivity_file_path)
-        sensitivity_wavelengths = sensitivity_data['wave'].values
-        sensitivity_throughputs = sensitivity_data['tp'].values
+        sensitivity_data = np.loadtxt(sensitivity_file_path,
+                                      skiprows=1, delimiter=",")
+        sensitivity_wavelengths = sensitivity_data[:, 0]
+        sensitivity_throughputs = sensitivity_data[:, 1]
 
         return sensitivity_wavelengths, sensitivity_throughputs
 

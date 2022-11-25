@@ -34,6 +34,7 @@ plt.scatter(sld.mus, sld.I_mu)
 plt.plot(test_mu, I_mu_50p)
 plt.fill_between(test_mu, I_mu_16p, I_mu_84p)
 plt.xlabel('mu')
+plt.ylim(0, 1.1)
 plt.show()
 
 us, us_sigmas = sld.compute_quadratic_ld_coeffs(
@@ -48,6 +49,7 @@ plt.scatter(sld.mus, sld.I_mu)
 plt.plot(test_mu, I_mu_percentiles[1])
 plt.fill_between(test_mu, I_mu_percentiles[0], I_mu_percentiles[2], alpha=0.3)
 plt.xlabel('mu')
+plt.ylim(0, 1.1)
 plt.show()
 
 us, us_sigmas = sld.compute_4_parameter_non_linear_ld_coeffs(
@@ -64,5 +66,6 @@ plt.scatter(sld.mus, sld.I_mu)
 plt.plot(test_mu, I_mu_percentiles[1])
 plt.fill_between(test_mu, I_mu_percentiles[0], I_mu_percentiles[2], alpha=0.3)
 plt.xlabel('mu')
+plt.ylim(0, 1.1)
 plt.show()
 

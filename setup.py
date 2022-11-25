@@ -14,7 +14,7 @@ setup(
     package_data={
         '': ['README.md', 'LICENSE']
     },
-    install_requires=['numpy', 'pandas', 'astropy', 'scipy'],
+    install_requires=['numpy', 'scipy'],
     include_package_data=True,
     classifiers=[
         'Intended Audience :: Science/Research',

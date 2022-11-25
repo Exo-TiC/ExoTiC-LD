@@ -3,7 +3,7 @@ Custom throughput
 
 In this tutorial we take a quick look at how to use a custom throughput if
 you cannot find the mode you are looking for in supported instruments.
-Let is mock up some throughput data.
+Let us mock up some throughput data.
 
 .. code-block:: python
 
