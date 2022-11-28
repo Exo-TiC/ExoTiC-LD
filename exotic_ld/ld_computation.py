@@ -49,14 +49,6 @@ class StellarLimbDarkening(object):
     verbose : boolean
         Print information during calculation. Default: False.
 
-    Methods
-    -------
-    compute_linear_ld_coeffs()
-    compute_quadratic_ld_coeffs()
-    compute_squareroot_ld_coeffs()
-    compute_3_parameter_non_linear_ld_coeffs()
-    compute_4_parameter_non_linear_ld_coeffs()
-
     Examples
     --------
     >>> from exotic_ld import StellarLimbDarkening

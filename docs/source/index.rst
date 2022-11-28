@@ -23,7 +23,7 @@ to the modelled :math:`I(\mu)` profile.
    Supported stellar grids <views/supported_stellar_grids>
    Supported instruments <views/supported_instruments>
    Tutorials <views/tutorials>
-   API <views/api>
+   API <views/api/api>
    Citation <views/citation>
 
 Acknowledgements

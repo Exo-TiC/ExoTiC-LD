@@ -40,3 +40,4 @@ exotic_ld_data/
 exotic_ld_data_original/
 *.p
 .ipynb_checkpoints
+docs/source/views/api/summary
