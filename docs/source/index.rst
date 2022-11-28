@@ -1,5 +1,9 @@
-ExoTiC-LD
-=========
+.. figure:: views/images/exotic-ld_logo.png
+   :alt: ExoTiC-LD
+   :width: 270
+   :align: center
+
+|
 
 ExoTiC-LD is a python package for calculating stellar limb-darkening
 coefficients for specific instruments, stars, and wavelength ranges.
