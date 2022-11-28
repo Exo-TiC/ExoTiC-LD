@@ -7,9 +7,9 @@ import astropy.constants as ac
 
 # Define original data paths.
 overwrite = False
-ld_data_path_original = '../data_original'
+ld_data_path_original = '../exotic_ld_data_original'
 stellar_data_path = os.path.join(ld_data_path_original, 'MPS-ATLAS-2')
-ld_data_path_new = '../data'
+ld_data_path_new = '../exotic_ld_data'
 new_data_path = os.path.join(ld_data_path_new, 'mps2')
 
 # Define parameter grids available.

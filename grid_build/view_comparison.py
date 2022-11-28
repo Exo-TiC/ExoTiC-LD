@@ -9,13 +9,13 @@ Teff = int(4500)
 logg = float(4.5)
 
 # Grids.
-grids = ['kurucz', 'mps1', 'mps2']
+grids = ['kurucz', 'stagger', 'mps1', 'mps2']
 
 # Plot each available spectrum.
 for g in grids:
 
     file_name = os.path.join(
-        "../data", g, "MH{}".format(M_H),
+        "../exotic_ld_data", g, "MH{}".format(M_H),
         "teff{}".format(Teff), "logg{}".format(logg),
         "{}_spectra.dat".format(g))
     print(file_name)
@@ -23,6 +23,7 @@ for g in grids:
     try:
         mu_data = np.loadtxt(file_name, skiprows=1, max_rows=1)
         stellar_data = np.loadtxt(file_name, skiprows=2)
+        print(stellar_data[:, 1:].shape)
     except FileNotFoundError as err:
         print('Model corresponding to Teff={}, logg={}, and M_H={} '
               'does not exist in the {} stellar models.'.format(

@@ -36,7 +36,7 @@ tmtagsHistory
 
 # OS Generated Files #
 ######################
-data/
-data_original/
+exotic_ld_data/
+exotic_ld_data_original/
 *.p
 .ipynb_checkpoints

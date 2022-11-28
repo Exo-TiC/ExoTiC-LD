@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'ExoTiC-LD'
-copyright = '2022, Hannah Wakeford'
-author = 'Hannah Wakeford'
+copyright = '2022, David Grant and Hannah Wakeford'
+author = 'David Grant and Hannah Wakeford'
 
 # The full version, including alpha/beta/rc tags
-release = 'v2.0.0'
+release = 'v3.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +32,7 @@ release = 'v2.0.0'
 # ones.
 extensions = [
     'sphinx_rtd_theme',
+    'nbsphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
