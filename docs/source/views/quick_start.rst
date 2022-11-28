@@ -46,7 +46,7 @@ mode and the wavelength range you require.
     # Instrument mode.
     mode = 'JWST_NIRSpec_prism'
 
-    c1, c2 = sld.compute_quadratic_ld_coeffs(wavelength_range, mode)
+    u1, u2 = sld.compute_quadratic_ld_coeffs(wavelength_range, mode)
 
 The limb-darkening laws available are linear, quadratic, square root,
 3-parameter and 4-parameter non-linear. The available stellar
