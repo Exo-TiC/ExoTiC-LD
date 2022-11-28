@@ -1,5 +1,9 @@
-ExoTiC-LD
-===========
+.. figure:: docs/source/views/images/exotic-ld_logo.png
+   :alt: ExoTiC-LD
+   :width: 270
+   :align: center
+
+|
 
 **Calculate limb-darkening coefficients for specific instruments, stars, and wavelength ranges.**
 
@@ -17,12 +21,5 @@ ExoTiC-LD
 
    pip install exotic-ld
 
+| ExoTiC-LD supports spectroscopic (JWST, HST), photometric (Spitzer, TESS), and custom instrument modes. 
 | Read the full documentation at: `exotic-ld.readthedocs.io <https://exotic-ld.readthedocs.io/>`_
-
-|
-ExoTiC-LD supports a range of pre-defined spectroscopic and photometric modes as well as custom inputs. 
-
-.. image:: docs/source/views/images/Supported_spectroscopic_modes.png
-  :width: 400
-.. image:: docs/source/views/images/Supported_photometric_modes.png
-  :width: 400
