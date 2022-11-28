@@ -45,7 +45,7 @@ class StellarLimbDarkening(object):
     custom_stellar_model : numpy.ndarray, shape (n, m)
         If ld_model='custom', pass the specific intensity of your stellar
         for each wavelength and mu value. Note specific intensity must
-        be in units of [n_photons / s / cm^2 / Angstrom].
+        be in units of [n_photons / s / cm^2 / Angstrom / steradian].
     verbose : boolean
         Print information during calculation. Default: False.
 
@@ -126,7 +126,7 @@ class StellarLimbDarkening(object):
             the values must fall within the supported range of the
             corresponding instrument mode.
         mode : string
-            Instrument mode which defines the throughput.
+            Instrument mode that defines the throughput.
             Modes supported for Hubble:
                 'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
                 'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.
@@ -185,7 +185,7 @@ class StellarLimbDarkening(object):
             the values must fall within the supported range of the
             corresponding instrument mode.
         mode : string
-            Instrument mode which defines the throughput.
+            Instrument mode that defines the throughput.
             Modes supported for Hubble:
                 'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
                 'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.
@@ -244,7 +244,7 @@ class StellarLimbDarkening(object):
             the values must fall within the supported range of the
             corresponding instrument mode.
         mode : string
-            Instrument mode which defines the throughput.
+            Instrument mode that defines the throughput.
             Modes supported for Hubble:
                 'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
                 'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.
@@ -303,7 +303,7 @@ class StellarLimbDarkening(object):
             the values must fall within the supported range of the
             corresponding instrument mode.
         mode : string
-            Instrument mode which defines the throughput.
+            Instrument mode that defines the throughput.
             Modes supported for Hubble:
                 'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
                 'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.
@@ -363,7 +363,7 @@ class StellarLimbDarkening(object):
             the values must fall within the supported range of the
             corresponding instrument mode.
         mode : string
-            Instrument mode which defines the throughput.
+            Instrument mode that defines the throughput.
             Modes supported for Hubble:
                 'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
                 'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.

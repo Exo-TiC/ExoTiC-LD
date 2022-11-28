@@ -2,8 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from exotic_ld import StellarLimbDarkening
-from exotic_ld.ld_laws import linear_ld_law, quadratic_ld_law, \
-    squareroot_ld_law, nonlinear_3param_ld_law, nonlinear_4param_ld_law
+from exotic_ld.ld_laws import quadratic_ld_law, nonlinear_4param_ld_law
 
 
 
@@ -14,13 +13,6 @@ sld = StellarLimbDarkening(
     ld_data_path='../../data', interpolate_type="nearest",
     custom_wavelengths=None, custom_mus=None,
     custom_stellar_model=None, verbose=True)
-
-# plt.plot(sld.stellar_wavelengths, sld.stellar_intensities[:, 0])
-# plt.plot(sld.stellar_wavelengths, sld.stellar_intensities[:, 3])
-# plt.plot(sld.stellar_wavelengths, sld.stellar_intensities[:, 6])
-# plt.xlabel('angstroms')
-# plt.xlim(0, 35000)
-# plt.show()
 
 test_mu = np.linspace(0., 1., 100)
 

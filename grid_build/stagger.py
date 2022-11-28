@@ -62,7 +62,7 @@ def read_stagger_model(_M_H, _Teff, _logg):
     Inputs
     ======
         wavelength [Angstroms]
-        specific intensity [erg / s / cm^2 / Angstroms * 1e-2]
+        specific intensity [erg / s / cm^2 / Angstroms / steradian * 1e-2]
 
     Return
     ======
@@ -96,13 +96,13 @@ def read_stagger_model(_M_H, _Teff, _logg):
     mu = np.flip(mu, axis=0)[:-1]
     intensities = np.flip(intensities, axis=1)[:, :-1]
 
-    specific_intensity_wv = intensities * q.erg / q.s / q.cm**2 / q.AA * 1e-2
+    specific_intensity_wv = intensities * q.erg / q.s / q.cm**2 / q.AA / q.steradian * 1e-2
 
     # Convert intensity from energy to number of photons.
     n_photon_intensity = specific_intensity_wv / (ac.h * ac.c / wavelengths[..., np.newaxis])
 
     # Update units [n_photons / s / cm^2 / Angstrom].
-    n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA)
+    n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA / q.steradian)
 
     return wavelengths, mu, n_photon_intensity
 

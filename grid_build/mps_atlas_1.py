@@ -6,8 +6,7 @@ import astropy.constants as ac
 
 
 # Define original data paths.
-known_files_missing = [
-    '../data_original/MPS-ATLAS-1/MH0.4/teff5000/logg4.2/mpsa_intensity_spectra.dat',]
+known_files_missing = []
 overwrite = False
 ld_data_path_original = '../data_original'
 stellar_data_path = os.path.join(ld_data_path_original, 'MPS-ATLAS-1')
@@ -39,7 +38,7 @@ def read_mps_atlas_1_model(_M_H, _Teff, _logg):
     ======
         wavelength [angstroms].
         nu  [].
-        photon_intensity  [n_photons / s / cm^2 / Angstrom].
+        photon_intensity  [n_photons / s / cm^2 / Angstrom / steradian].
 
     """
     file_name = os.path.join(stellar_data_path, "MH{}".format(_M_H),
@@ -68,25 +67,14 @@ def read_mps_atlas_1_model(_M_H, _Teff, _logg):
     specific_intensity_hz = stellar_data[:, 1:] \
                             * q.erg / q.s / q.cm**2 / q.Hz / q.steradian
 
-    import matplotlib.pyplot as plt
-    plt.plot(wavelengths, specific_intensity_hz[:, 0])
-    plt.plot(wavelengths, specific_intensity_hz[:, 3])
-    plt.plot(wavelengths, specific_intensity_hz[:, 6])
-    plt.plot(wavelengths, specific_intensity_hz[:, 9])
-    plt.show()
-    exit()
-
     # Convert intensity from per frequency to per wavelength.
     specific_intensity_wv = specific_intensity_hz * ac.c / wavelengths[..., np.newaxis]**2
 
     # Convert intensity from energy to number of photons.
     n_photon_intensity = specific_intensity_wv / (ac.h * ac.c / wavelengths[..., np.newaxis])
 
-    # Remove steradian dependence.
-    n_photon_intensity = n_photon_intensity * 4 * np.pi * q.steradian
-
     # Update units [n_photons / s / cm^2 / Angstrom].
-    n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA)
+    n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA / q.steradian)
 
     return wavelengths, mu, n_photon_intensity
 

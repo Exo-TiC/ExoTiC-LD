@@ -41,13 +41,13 @@ def read_kurucz_model(_M_H_idx, _M_H, _Teff_idx, _Teff, _logg_idx, _logg):
     ======
         wavelength [nm]
         specific intensity [erg / s / cm^2 / Hz / steradian]
-                            * scaled by mu=1 and 1e-5
+                            / I(mu=1) * 1e-5
 
     Return
     ======
         wavelength [angstroms].
         nu  [].
-        photon_intensity  [n_photons / s / cm^2 / Angstrom].
+        photon_intensity  [n_photons / s / cm^2 / Angstrom / steradian].
 
     """
     idl_sf_list = readsav(stellar_data_index)
@@ -87,11 +87,8 @@ def read_kurucz_model(_M_H_idx, _M_H, _Teff_idx, _Teff, _logg_idx, _logg):
     # Convert intensity from energy to number of photons.
     n_photon_intensity = specific_intensity_wv / (ac.h * ac.c / wavelengths[..., np.newaxis])
 
-    # Remove steradian dependence.
-    n_photon_intensity = n_photon_intensity * 4 * np.pi * q.steradian
-
     # Update units [n_photons / s / cm^2 / Angstrom].
-    n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA)
+    n_photon_intensity = n_photon_intensity.to(1. / q.s / q.cm**2 / q.AA / q.steradian)
 
     return wavelengths, mu, n_photon_intensity
 
