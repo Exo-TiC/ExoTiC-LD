@@ -7,8 +7,8 @@
 
 **Calculate limb-darkening coefficients for specific instruments, stars, and wavelength ranges.**
 
-.. image:: https://github.com/DavoGrant/ExoTiC-MIRI/workflows/unittests/badge.svg
-   :target: https://github.com/DavoGrant/ExoTiC-MIRI/actions/workflows/python-app.yml
+.. image:: https://github.com/DavoGrant/ExoTiC-LD/actions/workflows/unittests.yml/badge.svg
+   :target: https://github.com/DavoGrant/ExoTiC-LD/actions/workflows/unittests.yml
    
 .. image:: https://readthedocs.org/projects/exotic-ld/badge/?version=latest
    :target: https://exotic-ld.readthedocs.io/en/latest/?badge=latest
