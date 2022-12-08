@@ -10,19 +10,19 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../..'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'ExoTiC-LD'
-copyright = '2022, Hannah Wakeford'
-author = 'Hannah Wakeford'
+copyright = '2022, David Grant and Hannah Wakeford'
+author = 'David Grant and Hannah Wakeford'
 
 # The full version, including alpha/beta/rc tags
-release = 'v2.0.0'
+release = 'v3.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +32,12 @@ release = 'v2.0.0'
 # ones.
 extensions = [
     'sphinx_rtd_theme',
+    'nbsphinx',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

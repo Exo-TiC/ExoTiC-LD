@@ -2,11 +2,19 @@ Quick start
 ===========
 
 After installing the code and downloading the accompanying data (see
-installation) you are ready to compute limb-darkening coefficients. Below
-we demonstrate a minimal example. First we define the stellar parameters
-and which stellar models to use in the computation.
+:doc:`installation <installation>`) you are ready to calculate
+limb-darkening coefficients. Below we demonstrate a minimal example.
+
+First, we define the stellar parameters and which stellar models to use
+in the computation.
 
 .. code-block:: python
+
+    # Path to the downloaded data.
+    ld_data_path = 'path/to/exotic_ld_data'
+
+    # Stellar models grid.
+    ld_model = 'kurucz'
 
     # Metallicty [dex].
     M_H = 0.01
@@ -14,14 +22,8 @@ and which stellar models to use in the computation.
     # Effective temperature [K].
     Teff = 5512
 
-    # Gravity [dex].
+    # Surface gravity [dex].
     logg = 4.47
-
-    # Stellar models: 1D or 3D grid.
-    ld_model = '1D'
-
-    # Path to the installed data.
-    ld_data_path = 'path/to/ExoTiC-LD_data'
 
 Next, import the StellarLimbDarkening class and set the stellar parameters.
 
@@ -34,7 +36,7 @@ Next, import the StellarLimbDarkening class and set the stellar parameters.
 
 Now you can compute the stellar limb-darkening coefficients for the
 limb-darkening law of your choice. You simply have to specify the instrument
-mode and the wavelength range over you require.
+mode and the wavelength range you require.
 
 .. code-block:: python
 
@@ -44,8 +46,10 @@ mode and the wavelength range over you require.
     # Instrument mode.
     mode = 'JWST_NIRSpec_prism'
 
-    c1, c2 = sld.compute_quadratic_ld_coeffs(wavelength_range, mode)
+    u1, u2 = sld.compute_quadratic_ld_coeffs(wavelength_range, mode)
 
-The limb-darkening laws available are linear, quadratic, 3-parameter and
-4-parameter non-linear. The available instrument modes are listed in the
-supported instruments page.
+The limb-darkening laws available are linear, quadratic, square root,
+3-parameter and 4-parameter non-linear. The available stellar
+grids are listed in :doc:`supported stellar grids <supported_stellar_grids>`,
+and the available instrument modes are listed in
+:doc:`supported instruments <supported_instruments>`.

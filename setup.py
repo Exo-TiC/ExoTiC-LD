@@ -3,18 +3,18 @@ from setuptools import setup
 
 setup(
     name='exotic-ld',
-    version='2.0.0',
-    author='Hannah R Wakeford',
+    version='3.0.0',
+    author='David Grant and Hannah R Wakeford',
     author_email='hannah.wakeford@bristol.ac.uk',
     url='https://github.com/Exo-TiC/ExoTiC-LD',
     license='MIT',
     packages=['exotic_ld'],
     description='ExoTiC limb-darkening calculator',
-    long_description=open("README.md").read(),
+    long_description=open("README.rst").read(),
     package_data={
-        '': ['README.md', 'LICENSE']
+        '': ['README.rst', 'LICENSE']
     },
-    install_requires=['numpy', 'pandas', 'astropy', 'scipy'],
+    install_requires=['numpy', 'scipy'],
     include_package_data=True,
     classifiers=[
         'Intended Audience :: Science/Research',
