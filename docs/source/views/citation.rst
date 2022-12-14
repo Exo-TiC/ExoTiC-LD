@@ -6,17 +6,17 @@ If you make use of ExoTiC-LD in your research, please cite
 
 .. code-block::
 
-    @software{hannah_wakeford_2022_6809899,
-      author       = {Hannah Wakeford and
-                      David Grant},
-      title        = {Exo-TiC/ExoTiC-LD: ExoTiC-LD v2.1 Zenodo Release},
-      month        = jul,
-      year         = 2022,
-      publisher    = {Zenodo},
-      version      = {v2.1.0},
-      doi          = {10.5281/zenodo.6809899},
-      url          = {https://doi.org/10.5281/zenodo.6809899}
-    }
+        @software{david_grant_2022_7437681,
+          author       = {David Grant and
+                          Hannah R. Wakeford},
+          title        = {Exo-TiC/ExoTiC-LD: ExoTiC-LD v3.0.0},
+          month        = dec,
+          year         = 2022,
+          publisher    = {Zenodo},
+          version      = {v3.0.0},
+          doi          = {10.5281/zenodo.7437681},
+          url          = {https://doi.org/10.5281/zenodo.7437681}
+        }
 
 **Stellar models**
 
