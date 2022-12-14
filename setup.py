@@ -10,7 +10,8 @@ setup(
     license='MIT',
     packages=['exotic_ld'],
     description='ExoTiC limb-darkening calculator',
-    long_description=open("README.rst").read(),
+    long_description="Calculate limb-darkening coefficients for specific "
+                     "instruments, stars, and wavelength ranges.",
     package_data={
         '': ['README.rst', 'LICENSE']
     },
