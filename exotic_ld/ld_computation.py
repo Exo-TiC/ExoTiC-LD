@@ -53,7 +53,7 @@ class StellarLimbDarkening(object):
     --------
     >>> from exotic_ld import StellarLimbDarkening
     >>> sld = StellarLimbDarkening(
-            M_H=0.1, Teff=6045, logg=4.2, ld_model='mps2',
+            M_H=0.1, Teff=6045, logg=4.2, ld_model='mps1',
             ld_data_path='path/to/ExoTiC-LD_data')
     >>> c1, c2 = sld.compute_quadratic_ld_coeffs(
             wavelength_range=np.array([20000., 30000.]),
@@ -61,7 +61,7 @@ class StellarLimbDarkening(object):
 
     """
 
-    def __init__(self, M_H=None, Teff=None, logg=None, ld_model="mps2",
+    def __init__(self, M_H=None, Teff=None, logg=None, ld_model="mps1",
                  ld_data_path="", interpolate_type="nearest",
                  custom_wavelengths=None, custom_mus=None,
                  custom_stellar_model=None, verbose=False):
