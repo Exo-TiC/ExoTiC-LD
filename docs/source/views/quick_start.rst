@@ -14,7 +14,7 @@ in the computation.
     ld_data_path = 'path/to/exotic_ld_data'
 
     # Stellar models grid.
-    ld_model = 'kurucz'
+    ld_model = 'mps1'
 
     # Metallicty [dex].
     M_H = 0.01
