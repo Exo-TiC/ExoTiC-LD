@@ -1,7 +1,7 @@
 Citation
 ========
 
-Hannah Wakeford, & David Grant. (2022). Exo-TiC/ExoTiC-LD: ExoTiC-LD v2.1 Zenodo Release (v2.1.0). Zenodo. https://doi.org/10.5281/zenodo.6809899
+David Grant, & Hannah R. Wakeford. (2022). Exo-TiC/ExoTiC-LD: ExoTiC-LD v3.0.0 (v3.0.0). Zenodo. https://doi.org/10.5281/zenodo.7437681
 
 
 **Additional notes:**
@@ -98,3 +98,22 @@ We provide the following LaTeX/BibTeX acknowledgment if there is no specific pla
   volume = 573,
   year = 2015,
   Bdsk-Url-1 = {http://dx.doi.org/10.1051/0004-6361/201423804}}
+  
+  [6] Kostogryz et al. (2022) MPS-ATLAS stellar model grids set1 and set2
+  @ARTICLE{2022A&A...666A..60K,
+       author = {{Kostogryz}, N.~M. and {Witzke}, V. and {Shapiro}, A.~I. and {Solanki}, S.~K. and {Maxted}, P.~F.~L. and {Kurucz}, R.~L. and {Gizon}, L.},
+        title = "{Stellar limb darkening. A new MPS-ATLAS library for Kepler, TESS, CHEOPS, and PLATO passbands}",
+      journal = {\aap},
+     keywords = {radiative transfer, methods: numerical, Sun: atmosphere, stars: atmospheres, Astrophysics - Solar and Stellar Astrophysics, Astrophysics - Earth and Planetary Astrophysics},
+         year = 2022,
+        month = oct,
+       volume = {666},
+          eid = {A60},
+        pages = {A60},
+          doi = {10.1051/0004-6361/202243722},
+archivePrefix = {arXiv},
+       eprint = {2206.06641},
+ primaryClass = {astro-ph.SR},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2022A&A...666A..60K},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}}
+
