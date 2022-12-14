@@ -2,7 +2,7 @@ Citation
 ========
 
 If you make use of ExoTiC-LD in your research, please cite
-`Wakeford and Grant 2022 <https://doi.org/10.5281/zenodo.6809899>`_:
+`Grant and Wakeford 2022 <https://doi.org/10.5281/zenodo.7437681>`_:
 
 .. code-block::
 
