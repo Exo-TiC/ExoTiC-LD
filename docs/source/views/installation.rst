@@ -10,7 +10,7 @@ There are two steps for installing ExoTiC-LD.
        pip install exotic-ld
 
  2) Download the stellar models and instrument throughputs from `this
-    zenodo link <https://zenodo.org/record/6344946#.YistRy-l2ik>`_. Make sure
+    zenodo link <https://doi.org/10.5281/zenodo.7436954>`_. Make sure
     that you download the version that matches the exotic-ld package version.
 
     The downloaded and unzipped directory structure should have the following
