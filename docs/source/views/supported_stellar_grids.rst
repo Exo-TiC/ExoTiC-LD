@@ -37,7 +37,7 @@ stellar models and spans a range of metallicities from -5.0 to 1.5,
 effective temperatures from 3500 to 9000 k, and logg from 3.0 to 5.0.
 This grid has extensive parameter space coverage, showcasing 34160 models
 in total, each evaluated at 1221 wavelengths and 24 radial positions
-on the stellar disc. Set 1 uses the Grevesse & Saul 1998 abundances
+on the stellar disc. Set 1 uses the Grevesse & Sauval 1998 abundances
 with a constant chemical mixing length of 1.25.
 
 MPS-ATLAS-2
