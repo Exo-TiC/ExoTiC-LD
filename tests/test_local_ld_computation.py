@@ -16,7 +16,7 @@ class TestLDC(unittest.TestCase):
         np.random.seed(123)
 
         # Define local test paths.
-        self.local_data_path = '../exotic_ld_data'
+        self.local_data_path = '../../../data/exotic_ld_data'
 
         # Define supported modes.
         self.instrument_modes = [
