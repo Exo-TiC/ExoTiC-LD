@@ -14,7 +14,7 @@
    :target: https://exotic-ld.readthedocs.io/en/latest/?badge=latest
    
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7437681.svg
-   :target: https://doi.org/10.5281/zenodo.7437681
+   :target: https://doi.org/10.5281/zenodo.7874921
 |
 
 ::
