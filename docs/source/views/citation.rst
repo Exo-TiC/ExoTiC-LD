@@ -48,6 +48,17 @@ coefficients, you may also consider citing one of the following:
 
 .. code-block::
 
+    @article{kostogryz2023mps,
+      title={MPS-ATLAS library of stellar model atmospheres and spectra},
+      author={Kostogryz, N and Shapiro, AI and Witzke, V and Grant, D and Wakeford, HR and Stevenson, KB and Solanki, SK and Gizon, L},
+      journal={Research Notes of the AAS},
+      volume={7},
+      number={3},
+      pages={39},
+      year={2023},
+      publisher={The American Astronomical Society}
+    }
+
     @article{kostogryz2022stellar,
       title={Stellar limb darkening. I. A new MPS-ATLAS library for Kepler, TESS, CHEOPS, and PLATO passbands},
       author={Kostogryz, NM and Witzke, V and Shapiro, AI and Solanki, SK and Maxted, PFL and Kurucz, RL and Gizon, L},
