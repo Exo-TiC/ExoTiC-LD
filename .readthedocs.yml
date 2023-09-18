@@ -8,6 +8,5 @@ build:
     python: "3.9"
 
 python:
-  version: 3
   install:
     - requirements: docs/requirements.txt
