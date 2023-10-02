@@ -60,8 +60,11 @@ coefficients, you may also consider citing one of the following:
     }
 
     @article{kostogryz2022stellar,
-      title={Stellar limb darkening. I. A new MPS-ATLAS library for Kepler, TESS, CHEOPS, and PLATO passbands},
+      title={Stellar limb darkening. A new MPS-ATLAS library for Kepler, TESS, CHEOPS, and PLATO passbands},
       author={Kostogryz, NM and Witzke, V and Shapiro, AI and Solanki, SK and Maxted, PFL and Kurucz, RL and Gizon, L},
-      journal={arXiv preprint arXiv:2206.06641},
-      year={2022}
+      journal={Astronomy \& Astrophysics},
+      volume={666},
+      pages={A60},
+      year={2022},
+      publisher={EDP Sciences}
     }
