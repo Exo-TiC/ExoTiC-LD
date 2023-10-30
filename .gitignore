@@ -34,10 +34,11 @@ vendor.tags
 tmtagsHistory
 .bundle
 
-# OS Generated Files #
+# Data #
 ######################
 exotic_ld_data/
 exotic_ld_data_original/
 *.p
 .ipynb_checkpoints
 docs/source/views/api/summary
+*.dat

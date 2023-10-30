@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from scipy.spatial import KDTree
 
 
 class StellarGrids(object):
@@ -22,11 +23,13 @@ class StellarGrids(object):
         self.ld_model = ld_model
         self.ld_data_path = ld_data_path
         self.interpolate_type = interpolate_type
+        self._stellar_kd_tree = None
 
-        self._M_H_grid = None
-        self._Teff_grid = None
-        self._logg_grid = None
-        self._irregular_grid = None
+    def _get_stellar_model_kd_tree(self):
+        # Define stellar grid points.
+
+        return KDTree(leafsize=10, compact_nodes=True, copy_data=False, balanced_tree=True)
+
 
     def get_stellar_data(self):
         # Define grid coverage.
