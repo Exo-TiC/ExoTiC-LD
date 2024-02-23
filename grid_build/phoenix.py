@@ -8,7 +8,7 @@ import astropy.constants as ac
 
 # Define original data paths.
 known_files_missing = []
-overwrite = True
+overwrite = False
 ld_data_path_original = '../exotic_ld_data_original'
 stellar_data_path = os.path.join(ld_data_path_original, 'phoenix_v3_SpecIntFITS')
 ld_data_path_new = '../../../data/exotic_ld_data'

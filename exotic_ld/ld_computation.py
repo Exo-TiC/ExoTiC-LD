@@ -46,8 +46,9 @@ class StellarLimbDarkening(object):
         If ld_model='custom', pass the specific intensity of your stellar
         for each wavelength and mu value. Note specific intensity must
         be in units of [n_photons / s / cm^2 / Angstrom / steradian].
-    verbose : boolean
-        Print information during calculation. Default: False.
+    verbose : int
+        Level of printed information during calculation. Default: 1.
+        0, no info. 1, warnings. 2, step-by-step info.
 
     Examples
     --------
@@ -64,7 +65,7 @@ class StellarLimbDarkening(object):
     def __init__(self, M_H=None, Teff=None, logg=None, ld_model="mps1",
                  ld_data_path="", interpolate_type="nearest",
                  custom_wavelengths=None, custom_mus=None,
-                 custom_stellar_model=None, verbose=False):
+                 custom_stellar_model=None, verbose=1):
         self.verbose = verbose
 
         # Stellar input parameters.
@@ -72,7 +73,7 @@ class StellarLimbDarkening(object):
         self.Teff_input = int(Teff) if Teff is not None else None
         self.logg_input = float(logg) if logg is not None else None
         self.interpolate_type = interpolate_type
-        if self.verbose:
+        if self.verbose > 1:
             print("Input stellar parameters are M_H={}, Teff={}, logg={}."
                   .format(self.M_H_input, self.Teff_input, self.logg_input))
 
@@ -94,7 +95,7 @@ class StellarLimbDarkening(object):
             self.stellar_wavelengths = custom_wavelengths
             self.mus = custom_mus
             self.stellar_intensities = custom_stellar_model
-            if self.verbose:
+            if self.verbose > 1:
                 print("Using custom stellar model.")
         else:
             self._load_stellar_model()
@@ -402,7 +403,7 @@ class StellarLimbDarkening(object):
         return self._fit_ld_law(nonlinear_4param_ld_law, mu_min, return_sigmas)
 
     def _load_stellar_model(self):
-        if self.verbose:
+        if self.verbose > 1:
             print("Loading stellar model from {} grid.".format(self.ld_model))
 
         sg = StellarGrids(self.M_H_input, self.Teff_input,
@@ -411,7 +412,7 @@ class StellarLimbDarkening(object):
         self.stellar_wavelengths, self.mus, self.stellar_intensities = \
             sg.get_stellar_data()
 
-        if self.verbose:
+        if self.verbose > 1:
             print("Stellar model loaded.")
 
     def _check_stellar_model(self):
@@ -448,14 +449,14 @@ class StellarLimbDarkening(object):
             # Custom throughput provided.
             s_wavelengths = custom_wavelengths
             s_throughputs = custom_throughput
-            if self.verbose:
+            if self.verbose > 1:
                 print("Using custom instrument throughput with wavelength "
                       "range {}-{} A.".format(s_wavelengths[0],
                                               s_wavelengths[-1]))
         else:
             # Read in mode specific throughput.
             s_wavelengths, s_throughputs = self._read_sensitivity_data(mode)
-            if self.verbose:
+            if self.verbose > 1:
                 print("Loading instrument mode={} with wavelength range "
                       "{}-{} A.".format(mode, s_wavelengths[0],
                                         s_wavelengths[-1]))
@@ -503,7 +504,7 @@ class StellarLimbDarkening(object):
         b = wavelength_range[1]
         t = (b - a) / 2 * roots + (a + b) / 2
 
-        if self.verbose:
+        if self.verbose > 1:
             print("Integrating I(mu) for wavelength limits of {}-{} A."
                   .format(a, b))
 
@@ -535,14 +536,14 @@ class StellarLimbDarkening(object):
             raise ValueError("Zero intensity in this passband, check your "
                              "wavelength range is correct and in angstroms.")
 
-        if self.verbose:
+        if self.verbose > 1:
             print("Integral done for I(mu).")
 
     def _fit_ld_law(self, ld_law_func, mu_min, return_sigmas):
         # Truncate mu range to be fitted.
         mu_mask = self.mus >= mu_min
 
-        if self.verbose:
+        if self.verbose > 1:
             print("Fitting limb-darkening law to {} I(mu) data points "
                   "where {} <= mu <= 1.".format(np.sum(mu_mask), mu_min))
 
@@ -556,7 +557,7 @@ class StellarLimbDarkening(object):
                                self.I_mu[mu_mask],
                                method='lm')
 
-        if self.verbose:
+        if self.verbose > 1:
             print("Fit done, resulting coefficients are {}.".format(popt))
 
         if return_sigmas:
