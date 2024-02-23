@@ -3,6 +3,8 @@ import pickle
 import numpy as np
 from scipy.spatial import KDTree
 
+from exotic_ld.ld_requests import download
+
 
 class StellarGrids(object):
     """
@@ -13,7 +15,7 @@ class StellarGrids(object):
 
     """
 
-    def __init__(self, M_H, Teff, logg, ld_model, ld_data_path,
+    def __init__(self, M_H, Teff, logg, ld_model, ld_data_path, remote_ld_data_path,
                  interpolate_type, verbose):
         self.verbose = verbose
         self.M_H_input = M_H
@@ -21,6 +23,7 @@ class StellarGrids(object):
         self.logg_input = logg
         self.ld_model = ld_model
         self.ld_data_path = ld_data_path
+        self.remote_ld_data_path = remote_ld_data_path
         self.interpolate_type = interpolate_type
 
         # KD-tree of stellar models, scaled(M_H, Teff, logg).
@@ -110,9 +113,6 @@ class StellarGrids(object):
             if self.verbose > 1:
                 print("Trilinear interpolation within M_H={}-{}, Teff={}-{},"
                       " logg={}-{}.".format(x0, x1, y0, y1, z0, z1))
-
-            print(x0, x1, y0, y1, z0, z1)
-            exit()
 
             wvs, mus, c000 = self._read_in_stellar_model(x0, y0, z0)
             _, _, c001 = self._read_in_stellar_model(x0, y0, z1)
@@ -233,19 +233,25 @@ class StellarGrids(object):
         return None
 
     def _read_in_stellar_model(self, M_H, Teff, logg):
-        file_name = os.path.join(
+        local_file_path = os.path.join(
             self.ld_data_path, self.ld_model,
             "MH{}".format(M_H),
             "teff{}".format(int(Teff)),
             "logg{}".format(logg),
             "{}_spectra.dat".format(self.ld_model))
+        remote_file_path = os.path.join(
+            self.remote_ld_data_path, self.ld_model,
+            "MH{}".format(M_H),
+            "teff{}".format(int(Teff)),
+            "logg{}".format(logg),
+            "{}_spectra.dat".format(self.ld_model))
 
-        try:
-            mus = np.loadtxt(file_name, skiprows=1, max_rows=1)
-            stellar_data = np.loadtxt(file_name, skiprows=2)
-            return stellar_data[:, 0], mus, stellar_data[:, 1:]
+        # Check if exists locally.
+        if not os.path.exists(local_file_path):
+            download(remote_file_path, local_file_path, self.verbose)
+            if self.verbose > 1:
+                print("Downloaded {}.".format(local_file_path))
 
-        except FileNotFoundError as err:
-            raise FileNotFoundError(
-                "Model not found for stellar grid={} at path={}.".format(
-                 self.ld_model, file_name))
+        mus = np.loadtxt(local_file_path, skiprows=1, max_rows=1)
+        stellar_data = np.loadtxt(local_file_path, skiprows=2)
+        return stellar_data[:, 0], mus, stellar_data[:, 1:]

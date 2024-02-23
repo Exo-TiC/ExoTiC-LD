@@ -5,6 +5,7 @@ from scipy.interpolate import interp1d
 from scipy.special import roots_legendre
 
 from exotic_ld.ld_grids import StellarGrids
+from exotic_ld.ld_requests import download
 from exotic_ld.ld_laws import linear_ld_law, quadratic_ld_law, \
     squareroot_ld_law, nonlinear_3param_ld_law, nonlinear_4param_ld_law
 
@@ -79,6 +80,7 @@ class StellarLimbDarkening(object):
 
         # Set stellar grid.
         self.ld_data_path = ld_data_path
+        self.remote_ld_data_path = "https://www.star.bris.ac.uk/exotic-ld-data"
         if ld_model == '1D':
             self.ld_model = 'kurucz'
         elif ld_model == '3D':
@@ -407,7 +409,8 @@ class StellarLimbDarkening(object):
             print("Loading stellar model from {} grid.".format(self.ld_model))
 
         sg = StellarGrids(self.M_H_input, self.Teff_input,
-                          self.logg_input, self.ld_model, self.ld_data_path,
+                          self.logg_input, self.ld_model,
+                          self.ld_data_path, self.remote_ld_data_path,
                           self.interpolate_type, self.verbose)
         self.stellar_wavelengths, self.mus, self.stellar_intensities = \
             sg.get_stellar_data()
@@ -428,15 +431,21 @@ class StellarLimbDarkening(object):
                              'stellar_intensities.shape[1].')
 
     def _read_sensitivity_data(self, mode):
-        sensitivity_file_path = os.path.join(
+        local_sensitivity_file_path = os.path.join(
             self.ld_data_path,
             'Sensitivity_files/{}_throughput.csv'.format(mode))
-        if not os.path.exists(sensitivity_file_path):
-            raise FileNotFoundError(
-                'Sensitivity_file not found mode={} at path={}.'.format(
-                 mode, sensitivity_file_path))
+        remote_sensitivity_file_path = os.path.join(
+            self.remote_ld_data_path,
+            'Sensitivity_files/{}_throughput.csv'.format(mode))
 
-        sensitivity_data = np.loadtxt(sensitivity_file_path,
+        # Check if exists locally.
+        if not os.path.exists(local_sensitivity_file_path):
+            download(remote_sensitivity_file_path,
+                     local_sensitivity_file_path, self.verbose)
+            if self.verbose > 1:
+                print("Downloaded {}.".format(local_sensitivity_file_path))
+
+        sensitivity_data = np.loadtxt(local_sensitivity_file_path,
                                       skiprows=1, delimiter=",")
         sensitivity_wavelengths = sensitivity_data[:, 0]
         sensitivity_throughputs = sensitivity_data[:, 1]

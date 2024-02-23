@@ -98,10 +98,10 @@ for ld_model_key, ld_model_grids in sgp.items():
     points[:, 2] /= r_logg
 
     kd_tree = KDTree(points, leafsize=10, compact_nodes=True, copy_data=True, balanced_tree=True)
-    kd_tree_path = '{}_tree.pickle'.format(ld_model_key)
+    kd_tree_path = "{}_tree.pickle".format(ld_model_key)
     if os.path.exists(kd_tree_path) and not overwrite_trees:
         print("{} already exists, not overwriting.".format(kd_tree_path))
     else:
-        with open(kd_tree_path, 'wb') as f:
+        with open(kd_tree_path, "wb") as f:
             pickle.dump(kd_tree, f)
         print("Created {}.".format(kd_tree_path))
