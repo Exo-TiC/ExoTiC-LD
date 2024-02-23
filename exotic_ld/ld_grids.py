@@ -10,13 +10,13 @@ class StellarGrids(object):
     """
     Stellar grids class.
 
-    Load stellar models via kd-tree structure, select nearest models by
-    scaled features, and return the stellar data [wvs, mus, Is].
+    Load/download stellar models via kd-tree structure, select nearest
+    models by scaled features, and return the stellar data [wvs, mus, Is].
 
     """
 
     def __init__(self, M_H, Teff, logg, ld_model, ld_data_path, remote_ld_data_path,
-                 interpolate_type, verbose):
+                 ld_data_version, interpolate_type, verbose):
         self.verbose = verbose
         self.M_H_input = M_H
         self.Teff_input = Teff
@@ -28,7 +28,7 @@ class StellarGrids(object):
 
         # KD-tree of stellar models, scaled(M_H, Teff, logg).
         self._stellar_kd_tree = None
-        self._stellar_model_version = "3.2.0"
+        self._ld_data_version = ld_data_version
         self._get_stellar_model_kd_tree()
 
         # Scaling parameters.
@@ -238,13 +238,13 @@ class StellarGrids(object):
             "MH{}".format(M_H),
             "teff{}".format(int(Teff)),
             "logg{}".format(logg),
-            "{}_spectra.dat".format(self.ld_model))
+            "{}_spectra{}.dat".format(self.ld_model, self._ld_data_version))
         remote_file_path = os.path.join(
             self.remote_ld_data_path, self.ld_model,
             "MH{}".format(M_H),
             "teff{}".format(int(Teff)),
             "logg{}".format(logg),
-            "{}_spectra.dat".format(self.ld_model))
+            "{}_spectra{}.dat".format(self.ld_model, self._ld_data_version))
 
         # Check if exists locally.
         if not os.path.exists(local_file_path):

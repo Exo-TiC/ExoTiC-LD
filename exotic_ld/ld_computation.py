@@ -49,7 +49,7 @@ class StellarLimbDarkening(object):
         be in units of [n_photons / s / cm^2 / Angstrom / steradian].
     verbose : int
         Level of printed information during calculation. Default: 1.
-        0, no info. 1, warnings. 2, step-by-step info.
+        0 (no info), 1 (warnings/downloads), 2 (step-by-step info).
 
     Examples
     --------
@@ -66,7 +66,8 @@ class StellarLimbDarkening(object):
     def __init__(self, M_H=None, Teff=None, logg=None, ld_model="mps1",
                  ld_data_path="", interpolate_type="nearest",
                  custom_wavelengths=None, custom_mus=None,
-                 custom_stellar_model=None, verbose=1):
+                 custom_stellar_model=None, ld_data_version="3.2.0",
+                 verbose=1):
         self.verbose = verbose
 
         # Stellar input parameters.
@@ -81,10 +82,13 @@ class StellarLimbDarkening(object):
         # Set stellar grid.
         self.ld_data_path = ld_data_path
         self.remote_ld_data_path = "https://www.star.bris.ac.uk/exotic-ld-data"
-        if ld_model == '1D':
-            self.ld_model = 'kurucz'
-        elif ld_model == '3D':
-            self.ld_model = 'stagger'
+        self.ld_data_version = ld_data_version
+        if self.ld_data_version == "3.2.0":
+            self.ld_data_version = ""  # Ensures backwards compatibility.
+        if ld_model == "1D":
+            self.ld_model = "kurucz"
+        elif ld_model == "3D":
+            self.ld_model = "stagger"
         else:
             self.ld_model = ld_model
 
@@ -104,7 +108,7 @@ class StellarLimbDarkening(object):
         self._check_stellar_model()
 
     def __repr__(self):
-        return 'Stellar limb darkening: {} models.'.format(self.ld_model)
+        return "Stellar limb darkening: {} models.".format(self.ld_model)
 
     def compute_linear_ld_coeffs(self, wavelength_range, mode,
                                  custom_wavelengths=None,
@@ -411,7 +415,8 @@ class StellarLimbDarkening(object):
         sg = StellarGrids(self.M_H_input, self.Teff_input,
                           self.logg_input, self.ld_model,
                           self.ld_data_path, self.remote_ld_data_path,
-                          self.interpolate_type, self.verbose)
+                          self.ld_data_version, self.interpolate_type,
+                          self.verbose)
         self.stellar_wavelengths, self.mus, self.stellar_intensities = \
             sg.get_stellar_data()
 
@@ -420,23 +425,23 @@ class StellarLimbDarkening(object):
 
     def _check_stellar_model(self):
         if not self.stellar_intensities.ndim == 2:
-            raise ValueError('Stellar intensities must be 2D, with shape '
-                             '(n wavelengths, n mu values)')
+            raise ValueError("Stellar intensities must be 2D, with shape "
+                             "(n wavelengths, n mu values)")
         if not self.stellar_wavelengths.shape[0] == \
                self.stellar_intensities.shape[0]:
-            raise ValueError('Stellar wavelengths must have the same shape as '
-                             'stellar_intensities.shape[0].')
+            raise ValueError("Stellar wavelengths must have the same shape as "
+                             "stellar_intensities.shape[0].")
         if not self.mus.shape[0] == self.stellar_intensities.shape[1]:
-            raise ValueError('mu values must have the same shape as '
-                             'stellar_intensities.shape[1].')
+            raise ValueError("mu values must have the same shape as "
+                             "stellar_intensities.shape[1].")
 
     def _read_sensitivity_data(self, mode):
         local_sensitivity_file_path = os.path.join(
             self.ld_data_path,
-            'Sensitivity_files/{}_throughput.csv'.format(mode))
+            "Sensitivity_files/{}_throughput{}.csv".format(mode, self.ld_data_version))
         remote_sensitivity_file_path = os.path.join(
             self.remote_ld_data_path,
-            'Sensitivity_files/{}_throughput.csv'.format(mode))
+            "Sensitivity_files/{}_throughput{}.csv".format(mode, self.ld_data_version))
 
         # Check if exists locally.
         if not os.path.exists(local_sensitivity_file_path):
@@ -454,7 +459,7 @@ class StellarLimbDarkening(object):
 
     def _integrate_I_mu(self, wavelength_range, mode, custom_wavelengths,
                         custom_throughput):
-        if mode == 'custom':
+        if mode == "custom":
             # Custom throughput provided.
             s_wavelengths = custom_wavelengths
             s_throughputs = custom_throughput
@@ -499,7 +504,7 @@ class StellarLimbDarkening(object):
 
         # Ready sensitivity interpolator.
         if s_wvs.shape[0] >= 2:
-            s_interp_func = interp1d(s_wvs, s_thp, kind='linear',
+            s_interp_func = interp1d(s_wvs, s_thp, kind="linear",
                                      bounds_error=False, fill_value=0.)
         else:
             mean_wv = np.mean(wavelength_range)
@@ -524,7 +529,7 @@ class StellarLimbDarkening(object):
             # Ready intensity interpolator.
             if i_wvs.shape[0] >= 2:
                 i_interp_func = interp1d(
-                    i_wvs, i_int[:, mu_idx], kind='linear',
+                    i_wvs, i_int[:, mu_idx], kind="linear",
                     bounds_error=False, fill_value=0.)
             else:
                 mean_wv = np.mean(wavelength_range)
@@ -557,14 +562,14 @@ class StellarLimbDarkening(object):
                   "where {} <= mu <= 1.".format(np.sum(mu_mask), mu_min))
 
         if np.sum(mu_mask) < 2:
-            raise ValueError('mu_min={} set too high, must be >= 2 mu '
-                             'values remaining.'.format(mu_min))
+            raise ValueError("mu_min={} set too high, must be >= 2 mu "
+                             "values remaining.".format(mu_min))
 
         # Fit limb-darkening law: levenberg marquardt, guess default=1.
         popt, pcov = curve_fit(ld_law_func,
                                self.mus[mu_mask],
                                self.I_mu[mu_mask],
-                               method='lm')
+                               method="lm")
 
         if self.verbose > 1:
             print("Fit done, resulting coefficients are {}.".format(popt))
