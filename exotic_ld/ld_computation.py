@@ -47,6 +47,10 @@ class StellarLimbDarkening(object):
         If ld_model='custom', pass the specific intensity of your stellar
         for each wavelength and mu value. Note specific intensity must
         be in units of [n_photons / s / cm^2 / Angstrom / steradian].
+    ld_data_version : string
+        Version number of the data files. Implemented at 3.2.0, and
+        this corresponds to files with no version number appended.
+        Recommend not changing this from the default value.
     verbose : int
         Level of printed information during calculation. Default: 1.
         0 (no info), 1 (warnings/downloads), 2 (step-by-step info).
