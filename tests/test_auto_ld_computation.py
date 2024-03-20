@@ -3,7 +3,8 @@ import numpy as np
 
 from exotic_ld import StellarLimbDarkening
 from exotic_ld.ld_laws import linear_ld_law, quadratic_ld_law, \
-    squareroot_ld_law, nonlinear_3param_ld_law, nonlinear_4param_ld_law
+    squareroot_ld_law, nonlinear_3param_ld_law, nonlinear_4param_ld_law, \
+    kipping_ld_law
 
 
 class TestLDC(unittest.TestCase):
@@ -60,6 +61,15 @@ class TestLDC(unittest.TestCase):
                 custom_wavelengths=s_wvs,
                 custom_throughput=throughput)
             I_mu = quadratic_ld_law(test_mu, u1, u2)
+            self.assertEqual(I_mu[0], 1.)
+            self.assertFalse(np.any(np.diff(I_mu) > 0.))
+
+            # Quadratic law.
+            q1, q2 = sld_object.compute_kipping_ld_coeffs(
+                wavelength_range=wr, mode="custom",
+                custom_wavelengths=s_wvs,
+                custom_throughput=throughput)
+            I_mu = kipping_ld_law(test_mu, q1, q2)
             self.assertEqual(I_mu[0], 1.)
             self.assertFalse(np.any(np.diff(I_mu) > 0.))
 
