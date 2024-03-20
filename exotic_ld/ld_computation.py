@@ -33,8 +33,13 @@ class StellarLimbDarkening(object):
         set 2 models. If custom, must also provide custom_wavelengths,
         custom_mus, and custom_stellar_model.
     ld_data_path : string
-        Path to ExoTiC-LD_data directory downloaded from Zenodo. These
-        data include the stellar models and instrument throughputs.
+        Path to exotic-ld-data directory. As of version>=3.2.0 this path
+        specifies where stellar and instrument data are automatically
+        downloaded and stored. Only the required data is downloaded, and
+        if the data has previsouly been used, then no download is required.
+        The directory will be automatically created on the first call.
+        It remains an option, and is backwards compatible, to download
+        all the data from zenodo and specify the path.
     interpolate_type : string
         Choose between 'nearest' and 'trilinear'.
     custom_wavelengths : numpy.ndarray, shape (n,)
@@ -68,7 +73,7 @@ class StellarLimbDarkening(object):
     """
 
     def __init__(self, M_H=None, Teff=None, logg=None, ld_model="mps1",
-                 ld_data_path="", interpolate_type="nearest",
+                 ld_data_path="exotic_ld_data", interpolate_type="nearest",
                  custom_wavelengths=None, custom_mus=None,
                  custom_stellar_model=None, ld_data_version="3.2.0",
                  verbose=1):

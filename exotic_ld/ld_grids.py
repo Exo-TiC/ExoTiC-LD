@@ -42,7 +42,8 @@ class StellarGrids(object):
     def _get_stellar_model_kd_tree(self):
         this_dir, this_filename = os.path.split(__file__)
         tree_dir = os.path.join(this_dir, "../grid_build", "kd_trees")
-        tree_path = os.path.join(tree_dir, "{}_tree.pickle".format(self.ld_model))
+        tree_path = os.path.join(tree_dir, "{}_tree{}.pickle".format(
+            self.ld_model, self._ld_data_version))
         try:
             with open(tree_path, "rb") as f:
                 self._stellar_kd_tree = pickle.load(f)
