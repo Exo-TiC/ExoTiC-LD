@@ -167,6 +167,7 @@ class TestSM(unittest.TestCase):
         with tqdm(total=sg._stellar_kd_tree.data.shape[0]) as pbar:
             for _params in sg._stellar_kd_tree.data:
                 r_params = _params * self._r
+                r_params[0] = 0.0 if r_params[0] == -0.0 else r_params[0]  # Make zeros not negative.
                 remote_file_path = os.path.join(
                     self.remote_ld_data_path, sg.ld_model,
                     "MH{}".format(str(round(r_params[0], 2))),
