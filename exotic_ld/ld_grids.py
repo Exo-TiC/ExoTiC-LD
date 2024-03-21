@@ -234,6 +234,8 @@ class StellarGrids(object):
         return None
 
     def _read_in_stellar_model(self, M_H, Teff, logg):
+        M_H = 0.0 if M_H == -0.0 else M_H  # Make zeros not negative.
+
         local_file_path = os.path.join(
             self.ld_data_path, self.ld_model,
             "MH{}".format(str(round(M_H, 2))),
