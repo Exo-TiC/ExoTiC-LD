@@ -10,6 +10,7 @@ Limb-darkening laws
 
    linear_ld_law
    quadratic_ld_law
+   kipping_ld_law
    squareroot_ld_law
    nonlinear_3param_ld_law
    nonlinear_4param_ld_law

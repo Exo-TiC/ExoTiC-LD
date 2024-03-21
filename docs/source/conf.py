@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = 'ExoTiC-LD'
-copyright = '2022, David Grant and Hannah Wakeford'
+copyright = '2024, David Grant and Hannah Wakeford'
 author = 'David Grant and Hannah Wakeford'
 
 # The full version, including alpha/beta/rc tags

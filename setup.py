@@ -3,19 +3,19 @@ from setuptools import setup
 
 setup(
     name='exotic-ld',
-    version='3.0.0',
+    version='3.2.0',
     author='David Grant and Hannah R Wakeford',
     author_email='hannah.wakeford@bristol.ac.uk',
     url='https://github.com/Exo-TiC/ExoTiC-LD',
     license='MIT',
-    packages=['exotic_ld'],
+    packages=['exotic_ld', 'grid_build.kd_trees'],
     description='ExoTiC limb-darkening calculator',
     long_description="Calculate limb-darkening coefficients for specific "
                      "instruments, stars, and wavelength ranges.",
+    install_requires=['numpy', 'scipy', 'requests', 'tqdm'],
     package_data={
-        '': ['README.rst', 'LICENSE']
+        'grid_build.kd_trees': ['*.pickle']
     },
-    install_requires=['numpy', 'scipy'],
     include_package_data=True,
     classifiers=[
         'Intended Audience :: Science/Research',

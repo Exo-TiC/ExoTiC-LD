@@ -1,7 +1,7 @@
 Installation
 ============
 
-There are two steps for installing ExoTiC-LD.
+There is only one step (as of v3.2.0) for installing ExoTiC-LD.
 
  1) install the package with pip:
 
@@ -9,9 +9,22 @@ There are two steps for installing ExoTiC-LD.
 
        pip install exotic-ld
 
- 2) Download the stellar models and instrument throughputs from `this
-    zenodo link <https://doi.org/10.5281/zenodo.7874921>`_. Make sure
-    that you download the version that matches the exotic-ld package version.
+And now you are ready to go. Stellar models and instrument throughput data
+are selected and downloaded automatically at runtime. These data are saved
+locally and so are only downloaded once, speeding up subsequent runs. Head
+straight to the :doc:`quick start <quick_start>` page to begin computing
+limb-darkening coefficients 🚀.
+
+**Backwards compatibility/optional step**
+
+Prior to v3.2.0, the stellar models and instrument data had to be downloaded
+manually. If you wish to not rely on an internet connection or you already
+have these data, then you can proceed with step 2, which remains supported.
+However this is no longer necessary, you can skip this step and start computing
+limb-darkening coefficients right away.
+
+ 2) Download the stellar models and instrument throughputs from
+    `this zenodo link <https://doi.org/10.5281/zenodo.7874921>`_.
 
     The downloaded and unzipped directory structure should have the following
     layout:

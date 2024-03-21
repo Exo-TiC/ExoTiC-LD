@@ -3,6 +3,17 @@ Supported stellar grids
 
 Here we list each of the available stellar grids.
 
+Phoenix
+-------
+
+    | ld_model = 'phoenix'
+
+The Phoenix grid used the `Husser (2013) <https://www.aanda.org/articles/aa/pdf/2013/05/aa19058-12.pdf>`_
+stellar models and spans a range of metallicities from -1.5 to 1.0,
+effective temperatures from 2300 to 15000 k, and logg from 0.0 to 6.0.
+There are 5079 models in total, each evaluated at 54500 wavelengths and
+78 radial positions on the stellar disc.
+
 Kurucz
 ------
 

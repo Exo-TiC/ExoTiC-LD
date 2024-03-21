@@ -8,6 +8,13 @@ def quadratic_ld_law(mu, u1, u2):
     return 1. - u1 * (1. - mu) - u2 * (1. - mu)**2
 
 
+def kipping_ld_law(mu, q1, q2):
+    """ Kipping limb darkening law. """
+    u1 = 2. * q1**0.5 * q2
+    u2 = q1**0.5 * (1. - 2. * q2)
+    return 1. - u1 * (1. - mu) - u2 * (1. - mu)**2
+
+
 def squareroot_ld_law(mu, u1, u2):
     """ Square root limb darkening law. """
     return 1. - u1 * (1. - mu) - u2 * (1. - mu**0.5)
