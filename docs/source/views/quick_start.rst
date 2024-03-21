@@ -1,17 +1,16 @@
 Quick start
 ===========
 
-After installing the code and downloading the accompanying data (see
-:doc:`installation <installation>`) you are ready to calculate
-limb-darkening coefficients. Below we demonstrate a minimal example.
+After installing the code (see :doc:`installation <installation>`) you are ready
+to calculate limb-darkening coefficients. Below we demonstrate a minimal example.
 
 First, we define the stellar parameters and which stellar models to use
 in the computation.
 
 .. code-block:: python
 
-    # Path to the downloaded data.
-    ld_data_path = 'path/to/exotic_ld_data'
+    # Path to store stellar and instrument data.
+    ld_data_path = 'exotic_ld_data'
 
     # Stellar models grid.
     ld_model = 'mps1'
@@ -48,8 +47,13 @@ mode and the wavelength range you require.
 
     u1, u2 = sld.compute_quadratic_ld_coeffs(wavelength_range, mode)
 
-The limb-darkening laws available are linear, quadratic, square root,
-3-parameter and 4-parameter non-linear. The available stellar
-grids are listed in :doc:`supported stellar grids <supported_stellar_grids>`,
+Note that only the stellar and instrument data required for your calculation are
+automatically downloaded. These data are saved to your specified ld_data_path, and
+so on subsequent runs with the same parameters the calculation will run much faster.
+
+The limb-darkening laws available are linear, quadratic, the Kipping
+reparameterisation, square root, 3-parameter and 4-parameter non-linear. The
+available stellar grids are listed in
+:doc:`supported stellar grids <supported_stellar_grids>`,
 and the available instrument modes are listed in
 :doc:`supported instruments <supported_instruments>`.
