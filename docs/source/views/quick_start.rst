@@ -43,7 +43,7 @@ mode and the wavelength range you require.
     wavelength_range = [20000., 30000.]
 
     # Instrument mode.
-    mode = 'JWST_NIRSpec_prism'
+    mode = 'JWST_NIRSpec_Prism'
 
     u1, u2 = sld.compute_quadratic_ld_coeffs(wavelength_range, mode)
 

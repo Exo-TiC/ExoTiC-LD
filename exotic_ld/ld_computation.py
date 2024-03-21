@@ -69,7 +69,7 @@ class StellarLimbDarkening(object):
             ld_data_path='path/to/ExoTiC-LD_data')
     >>> c1, c2 = sld.compute_quadratic_ld_coeffs(
             wavelength_range=np.array([20000., 30000.]),
-            mode='JWST_NIRSpec_prism')
+            mode='JWST_NIRSpec_Prism')
 
     """
 
