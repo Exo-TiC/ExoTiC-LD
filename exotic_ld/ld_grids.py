@@ -236,15 +236,15 @@ class StellarGrids(object):
     def _read_in_stellar_model(self, M_H, Teff, logg):
         local_file_path = os.path.join(
             self.ld_data_path, self.ld_model,
-            "MH{}".format(M_H),
-            "teff{}".format(int(Teff)),
-            "logg{}".format(logg),
+            "MH{}".format(str(round(M_H, 2))),
+            "teff{}".format(int(round(Teff))),
+            "logg{}".format(str(round(logg, 1))),
             "{}_spectra{}.dat".format(self.ld_model, self._ld_data_version))
         remote_file_path = os.path.join(
             self.remote_ld_data_path, self.ld_model,
-            "MH{}".format(M_H),
-            "teff{}".format(int(Teff)),
-            "logg{}".format(logg),
+            "MH{}".format(str(round(M_H, 2))),
+            "teff{}".format(int(round(Teff))),
+            "logg{}".format(str(round(logg, 1))),
             "{}_spectra{}.dat".format(self.ld_model, self._ld_data_version))
 
         # Check if exists locally.
