@@ -1,130 +1,117 @@
 import os
+import pickle
 import numpy as np
+import pkg_resources
+from scipy.spatial import KDTree
+
+from exotic_ld.ld_requests import download
 
 
 class StellarGrids(object):
     """
     Stellar grids class.
 
-    Check availability of stellar models in each of the
-    various grids supported. Load nearest match or
-    interpolate stellar models within a cuboid.
+    Load/download stellar models via kd-tree structure, select nearest
+    models by scaled features, and return the stellar data [wvs, mus, Is].
 
     """
 
-    def __init__(self, M_H, Teff, logg, ld_model, ld_data_path,
-                 interpolate_type, verbose):
+    def __init__(self, M_H, Teff, logg, ld_model, ld_data_path, remote_ld_data_path,
+                 ld_data_version, interpolate_type, verbose):
         self.verbose = verbose
-
         self.M_H_input = M_H
         self.Teff_input = Teff
         self.logg_input = logg
         self.ld_model = ld_model
         self.ld_data_path = ld_data_path
+        self.remote_ld_data_path = remote_ld_data_path
         self.interpolate_type = interpolate_type
 
-        self._M_H_grid = None
-        self._Teff_grid = None
-        self._logg_grid = None
-        self._irregular_grid = None
+        # KD-tree of stellar models, scaled(M_H, Teff, logg).
+        self._stellar_kd_tree = None
+        self._ld_data_version = ld_data_version
+        self._get_stellar_model_kd_tree()
+
+        # Scaling parameters.
+        self._r_M_H = 1.00
+        self._r_Teff = 607.
+        self._r_logg = 1.54
+        self.x = np.array([self.M_H_input / self._r_M_H,
+                           self.Teff_input / self._r_Teff,
+                           self.logg_input / self._r_logg])
+
+    def _get_stellar_model_kd_tree(self):
+        tree_path = pkg_resources.resource_filename(
+            "grid_build.kd_trees", "{}_tree{}.pickle".format(
+                self.ld_model, self._ld_data_version))
+        try:
+            with open(tree_path, "rb") as f:
+                self._stellar_kd_tree = pickle.load(f)
+        except FileNotFoundError as err:
+            raise ValueError("ld_model not recognised.")
+        except pickle.UnpicklingError as err:
+            raise pickle.UnpicklingError("Failed loading stellar model pickle, "
+                                         "check python version is supported.")
 
     def get_stellar_data(self):
-        # Define grid coverage.
-        if self.ld_model == "kurucz":
-            self._M_H_grid = np.array(
-                [-0.1, -0.2, -0.3, -0.5, -1.0, -1.5, -2.0, -2.5, -3.0,
-                 -3.5, -4.0, -4.5, -5.0, 0.0, 0.1, 0.2, 0.3, 0.5, 1.0])
-            self._Teff_grid = np.array(
-                [3500, 3750, 4000, 4250, 4500, 4750, 5000,
-                 5250, 5500, 5750, 6000, 6250, 6500])
-            self._logg_grid = np.array([4.0, 4.5, 5.0])
-
-        elif self.ld_model == "mps1" or self.ld_model == "mps2":
-            self._M_H_grid = np.array(
-                [-0.1, -0.2, -0.3, -0.4, -0.5, -0.05, -0.6, -0.7, -0.8,
-                 -0.9, -0.15, -0.25, -0.35, -0.45, -0.55, -0.65, -0.75,
-                 -0.85, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6,
-                 -1.7, -1.8, -1.9, -2.0, -2.1, -2.2, -2.3, -2.4, -2.5,
-                 -3.0, -3.5, -4.0, -4.5, -5.0, 0.0, 0.1, 0.2, 0.3, 0.4,
-                 0.5, 0.05, 0.6, 0.7, 0.8, 0.9, 0.15, 0.25, 0.35, 0.45,
-                 1.0, 1.1, 1.2, 1.3, 1.4, 1.5])
-            self._Teff_grid = np.arange(3500, 9050, 100)
-            self._logg_grid = np.array(
-                [3.0, 3.5, 4.0, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.0])
-
-        elif self.ld_model == "stagger":
-            self._irregular_grid =\
-                {4000: {1.5: [-3.0, -2.0, -1.0, 0.0],
-                        2.0: [-3.0, -2.0, -1.0, 0.0],
-                        2.5: [-3.0, -2.0, -1.0, 0.0]},
-                 4500: {1.5: [-3.0, -1.0],
-                        2.0: [-3.0, -2.0, -1.0, 0.0],
-                        2.5: [-3.0, -2.0, -1.0, 0.0],
-                        3.0: [-3.0, -1.0, 0.0],
-                        3.5: [-3.0, 0.0],
-                        4.0: [-3.0, 0.0],
-                        4.5: [0.0],
-                        5.0: [0.0]},
-                 5000: {2.0: [-3.0, 0.0],
-                        2.5: [-3.0, 0.0],
-                        3.0: [-3.0, 0.0],
-                        3.5: [-3.0, -1.0, 0.0],
-                        4.0: [-3.0, -2.0, -1.0, 0.0],
-                        4.5: [-3.0, -2.0, -1.0, 0.0],
-                        5.0: [-3.0, -2.0, -1.0, 0.0]},
-                 5500: {2.5: [-3.0, -2.0],
-                        3.0: [-3.0, -2.0, -1.0, 0.0],
-                        3.5: [-3.0, -1.0, 0.0],
-                        4.0: [-3.0, -2.0, -1.0, 0.0],
-                        4.5: [-3.0, -2.0, -1.0, 0.0],
-                        5.0: [-3.0, -2.0, -1.0, 0.0]},
-                 5777: {4.4: [-3.0, -2.0, -1.0, 0.0]},
-                 6000: {3.5: [-3.0, -2.0, -1.0, 0.0],
-                        4.0: [-3.0, -2.0, -1.0, 0.0],
-                        4.5: [-3.0, -2.0, -1.0, 0.0]},
-                 6500: {4.0: [-3.0, -2.0, -1.0, 0.0],
-                        4.5: [-3.0, -2.0, -1.0, 0.0]},
-                 7000: {4.5: [-3.0, 0.0]}}
-
-        else:
-            raise ValueError("ld_model not recognised.")
-
-        # Get stellar data.
-        if not self.ld_model == "stagger":
-            if self.M_H_input in self._M_H_grid \
-                    and self.Teff_input in self._Teff_grid \
-                    and self.logg_input in self._logg_grid:
-                # Exact input parameters exist in grid.
-                if self.verbose:
-                    print("Exact match found.")
-                return self._read_in_stellar_model(
-                    self.M_H_input, self.Teff_input, self.logg_input)
-        else:
-            try:
-                if self.M_H_input in self._irregular_grid[
-                        self.Teff_input][self.logg_input]:
-                    if self.verbose:
-                        print("Exact match found.")
-                    return self._read_in_stellar_model(
-                        self.M_H_input, self.Teff_input, self.logg_input)
-                else:
-                    raise KeyError
-            except KeyError as err:
-                pass
-
+        """ Return stellar data ready for computing limb darkening. """
         if self.interpolate_type == "nearest":
+            if self.verbose > 1:
+                print("Using interpolation type = nearest.")
+
             # Find best-matching grid point to input parameters.
-            M_H, Teff, logg = self._get_nearest_grid_point()
-            if self.verbose:
-                print("Matched nearest with M_H={}, Teff={}, logg={}."
-                      .format(M_H, Teff, logg))
-            return self._read_in_stellar_model(M_H, Teff, logg)
+            distance, nearest_idx = self._stellar_kd_tree.query(self.x, k=1)
+            nearest_M_H, nearest_Teff, nearest_logg = \
+                self._stellar_kd_tree.data[nearest_idx]
+
+            # Rescaling.
+            nearest_M_H *= self._r_M_H
+            nearest_Teff *= self._r_Teff
+            nearest_logg *= self._r_logg
+
+            if self.verbose > 0:
+                if distance > 1.0:  # Equiv. rescaled units[1.0 dex, 607 K, 1.54 dex].
+                    print("Warning: the closest matching stellar model is far "
+                          "from your input at M_H={}, Teff={}, logg={}."
+                          .format(nearest_M_H, nearest_Teff, nearest_logg))
+            if self.verbose > 1:
+                if distance == 0.:
+                    print("Exact match found with M_H={}, Teff={}, logg={}."
+                          .format(nearest_M_H, nearest_Teff, nearest_logg))
+                else:
+                    print("Matched nearest with M_H={}, Teff={}, logg={}."
+                          .format(nearest_M_H, nearest_Teff, nearest_logg))
+
+            return self._read_in_stellar_model(nearest_M_H, nearest_Teff, nearest_logg)
 
         elif self.interpolate_type == "trilinear":
+            if self.verbose > 1:
+                print("Using interpolation type = trilinear.")
+
             # Trilinear interpolation of cuboid of grid points
             # (x8 vertices) surrounding input parameters.
-            x0, x1, y0, y1, z0, z1 = self._get_surrounding_grid_cuboid()
-            if self.verbose:
+            vertices = self._get_surrounding_grid_cuboid()
+
+            if vertices is None:
+                if self.verbose > 0:
+                    print("Warning: insufficient model coverage to interpolate grid={} "
+                          "at M_H={}, Teff={}, logg={}. Falling back to nearest point."
+                          .format(self.ld_model, self.M_H_input,
+                                  self.Teff_input, self.logg_input))
+
+                self.interpolate_type = "nearest"
+                return self.get_stellar_data()
+
+            # Rescaling.
+            x0, x1, y0, y1, z0, z1 = vertices
+            x0 *= self._r_M_H
+            x1 *= self._r_M_H
+            y0 *= self._r_Teff
+            y1 *= self._r_Teff
+            z0 *= self._r_logg
+            z1 *= self._r_logg
+
+            if self.verbose > 1:
                 print("Trilinear interpolation within M_H={}-{}, Teff={}-{},"
                       " logg={}-{}.".format(x0, x1, y0, y1, z0, z1))
 
@@ -163,120 +150,111 @@ class StellarGrids(object):
         else:
             raise ValueError("interpolate_type not recognised.")
 
-    def _read_in_stellar_model(self, M_H, Teff, logg):
-        """ Read in the stellar model from disc. """
-        file_name = os.path.join(
-            self.ld_data_path, self.ld_model,
-            "MH{}".format(M_H),
-            "teff{}".format(Teff),
-            "logg{}".format(logg),
-            "{}_spectra.dat".format(self.ld_model))
-
-        try:
-            mus = np.loadtxt(file_name, skiprows=1, max_rows=1)
-            stellar_data = np.loadtxt(file_name, skiprows=2)
-            return stellar_data[:, 0], mus, stellar_data[:, 1:]
-
-        except FileNotFoundError as err:
-            raise FileNotFoundError(
-                'Model not found for stellar grid={} at path={}.'.format(
-                 self.ld_model, file_name))
-
-    def _get_nearest_grid_point(self):
-        if not self.ld_model == "stagger":
-            # Find nearest grid point for each input parameter.
-            match_M_H_idx = np.argmin(np.abs(self._M_H_grid - self.M_H_input))
-            match_Teff_idx = np.argmin(np.abs(self._Teff_grid - self.Teff_input))
-            match_logg_idx = np.argmin(np.abs(self._logg_grid - self.logg_input))
-
-            match_M_H = self._M_H_grid[match_M_H_idx]
-            match_Teff = self._Teff_grid[match_Teff_idx]
-            match_logg = self._logg_grid[match_logg_idx]
-        else:
-            # Find nearest grid point in order of Teff, logg, then M_H.
-            Teff_grid = np.fromiter(self._irregular_grid.keys(), dtype=int)
-            match_Teff_idx = np.argmin(np.abs(Teff_grid - self.Teff_input))
-            match_Teff = Teff_grid[match_Teff_idx]
-
-            logg_grid = np.fromiter(self._irregular_grid[match_Teff].keys(), dtype=float)
-            match_logg_idx = np.argmin(np.abs(logg_grid - self.logg_input))
-            match_logg = logg_grid[match_logg_idx]
-
-            M_H_grid = np.array(self._irregular_grid[match_Teff][match_logg], dtype=float)
-            match_M_H_idx = np.argmin(np.abs(M_H_grid - self.M_H_input))
-            match_M_H = M_H_grid[match_M_H_idx]
-
-        return match_M_H, match_Teff, match_logg
-
     def _get_surrounding_grid_cuboid(self):
-        if not self.ld_model == "stagger":
-            # Find adjacent grid points for each parameter
-            x0, x1 = self._get_adjacent_grid_points(self._M_H_grid, self.M_H_input)
-            y0, y1 = self._get_adjacent_grid_points(self._Teff_grid, self.Teff_input)
-            z0, z1 = self._get_adjacent_grid_points(self._logg_grid, self.logg_input)
-        else:
-            # Find adjacent grid point in order of Teff, logg, then M_H.
-            # And check if all other points exist in irregular grid.
-            Teff_grid = np.fromiter(self._irregular_grid.keys(), dtype=int)
-            y0, y1 = self._get_adjacent_grid_points(Teff_grid, self.Teff_input)
+        # Search scaled radius = 1. from target point; returned arrays are
+        # sorted by distance.
+        distances, near_idxs = self._stellar_kd_tree.query(
+            self.x, k=len(self._stellar_kd_tree.data), distance_upper_bound=1.0)
+        found_idxs = distances != np.inf
+        distances = distances[found_idxs]
+        near_idxs = near_idxs[found_idxs]
+        near_points = self._stellar_kd_tree.data[near_idxs]
 
-            coords = []
-            for y_ in [y0, y1]:
-                logg_grid = np.fromiter(self._irregular_grid[y_].keys(), dtype=float)
-                z0, z1 = self._get_adjacent_grid_points(logg_grid, self.logg_input)
-                for z_ in [z0, z1]:
-                    M_H_grid = np.array(self._irregular_grid[y_][z_], dtype=float)
-                    x0, x1 = self._get_adjacent_grid_points(M_H_grid, self.M_H_input)
-                    for x_ in [x0, x1]:
-                        coords.append([y_, z_, x_])
+        if len(distances) == 0:
+            # No nearby points.
+            return None
 
-            coords = np.array(coords)
-            Teff_consistent_below = coords[:4, 0] == y0
-            Teff_consistent_above = coords[4:, 0] == y1
-            logg_consistent_below = coords[:, 1].reshape(-1, 4)[:, :2].reshape(-1) == z0
-            logg_consistent_above = coords[:, 1].reshape(-1, 4)[:, 2:].reshape(-1) == z1
-            M_H_consistent_below = coords[::2, 2] == x0
-            M_H_consistent_above = coords[1::2, 2] == x1
-            consistent = np.concatenate(
-                [Teff_consistent_below, Teff_consistent_above,
-                 logg_consistent_below, logg_consistent_above,
-                 M_H_consistent_below, M_H_consistent_above])
+        if distances[0] == 0.:
+            # Exact match found.
+            return self.x[0], self.x[0], self.x[1], self.x[1], self.x[2], self.x[2]
 
-            if np.any(~consistent):
-                raise FileNotFoundError(
-                    'Insufficient model coverage to interpolate grid={} at '
-                    'M_H={}, Teff={}, logg={}.'.format(
-                        self.ld_model, self.M_H_input,
-                        self.Teff_input, self.logg_input))
+        # Now, look for the smallest bounding cuboid. (1) select the first vertex,
+        # (2) search for an opposite vertex, one that spans the target in all 3
+        # axes, (3) check the remaining 6 vertices exist.
 
-        return x0, x1, y0, y1, z0, z1
+        # Trial points, closest first, as the first vertex.
+        for f_idx, first_vertex_idx in enumerate(near_idxs[:-1]):
+            first_vertex = self._stellar_kd_tree.data[first_vertex_idx]
 
-    def _get_adjacent_grid_points(self, param_grid, param_input):
-        # Find nearest grid point above and below input parameter.
-        residual = param_grid - param_input
-        if 0. in residual:
-            match_idx = np.argmin(np.abs(residual))
-            return param_grid[match_idx], param_grid[match_idx]
+            # Trial points, only checking those further away, as the opposite vertex.
+            for o_idx, opposite_vertex_idx in enumerate(near_idxs[f_idx + 1:]):
+                opposite_vertex = self._stellar_kd_tree.data[opposite_vertex_idx]
 
-        residual_plus = residual[residual >= 0.]
-        residual_minus = residual[residual < 0.]
+                # Is this pair of points opposite the target point.
+                is_opposite = True
+                for i_dim in range(3):
+                    if not (first_vertex[i_dim] <= self.x[i_dim] <=
+                            opposite_vertex[i_dim]) \
+                            and not (opposite_vertex[i_dim] <= self.x[i_dim] <=
+                                     first_vertex[i_dim]):
+                        is_opposite = False
+                        break
 
-        if residual_plus.shape[0] == 0:
-            # If no grid above, set both to below.
-            below_idx = np.argmax(residual_minus)
-            below_param = param_grid[below_idx]
-            above_param = below_param
+                if is_opposite:
+                    # Check if the remaining 6 vertices exist.
+                    remaining_vertices = np.array(
+                        [[first_vertex[0], opposite_vertex[1], first_vertex[2]],
+                         [first_vertex[0], first_vertex[1], opposite_vertex[2]],
+                         [first_vertex[0], opposite_vertex[1], opposite_vertex[2]],
+                         [opposite_vertex[0], first_vertex[1], opposite_vertex[2]],
+                         [opposite_vertex[0], opposite_vertex[1], first_vertex[2]],
+                         [opposite_vertex[0], first_vertex[1], first_vertex[2]]])
 
-        elif residual_minus.shape[0] == 0:
-            # If no grid below, set both to above.
-            above_idx = np.argmin(residual_plus)
-            above_param = param_grid[above_idx]
-            below_param = above_param
+                    exists_cuboid = True
+                    for rv in remaining_vertices:
+                        if not np.any(np.all(near_points == rv, axis=1)):
+                            exists_cuboid = False
+                            break
 
-        else:
-            above_idx = np.argmin(residual_plus)
-            below_idx = np.argmax(residual_minus)
-            above_param = param_grid[residual >= 0.][above_idx]
-            below_param = param_grid[residual < 0.][below_idx]
+                    if exists_cuboid:
+                        # Order vertices by position.
+                        if first_vertex[0] < opposite_vertex[0]:
+                            x0 = first_vertex[0]
+                            x1 = opposite_vertex[0]
+                        else:
+                            x0 = opposite_vertex[0]
+                            x1 = first_vertex[0]
 
-        return below_param, above_param
+                        if first_vertex[1] < opposite_vertex[1]:
+                            y0 = first_vertex[1]
+                            y1 = opposite_vertex[1]
+                        else:
+                            y0 = opposite_vertex[1]
+                            y1 = first_vertex[1]
+
+                        if first_vertex[2] < opposite_vertex[2]:
+                            z0 = first_vertex[2]
+                            z1 = opposite_vertex[2]
+                        else:
+                            z0 = opposite_vertex[2]
+                            z1 = first_vertex[2]
+
+                        return x0, x1, y0, y1, z0, z1
+
+        return None
+
+    def _read_in_stellar_model(self, M_H, Teff, logg):
+        M_H = 0.0 if M_H == -0.0 else M_H  # Make zeros not negative.
+
+        local_file_path = os.path.join(
+            self.ld_data_path, self.ld_model,
+            "MH{}".format(str(round(M_H, 2))),
+            "teff{}".format(int(round(Teff))),
+            "logg{}".format(str(round(logg, 1))),
+            "{}_spectra{}.dat".format(self.ld_model, self._ld_data_version))
+        remote_file_path = os.path.join(
+            self.remote_ld_data_path, self.ld_model,
+            "MH{}".format(str(round(M_H, 2))),
+            "teff{}".format(int(round(Teff))),
+            "logg{}".format(str(round(logg, 1))),
+            "{}_spectra{}.dat".format(self.ld_model, self._ld_data_version))
+
+        # Check if exists locally.
+        if not os.path.exists(local_file_path):
+            download(remote_file_path, local_file_path, self.verbose)
+            if self.verbose > 1:
+                print("Downloaded {}.".format(local_file_path))
+
+        mus = np.loadtxt(local_file_path, skiprows=1, max_rows=1)
+        stellar_data = np.loadtxt(local_file_path, skiprows=2)
+        return stellar_data[:, 0], mus, stellar_data[:, 1:]

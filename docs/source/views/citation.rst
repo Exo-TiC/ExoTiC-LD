@@ -25,6 +25,17 @@ coefficients, you may also consider citing one of the following:
 
 .. code-block::
 
+    @article{husser2013new,
+      title={A new extensive library of PHOENIX stellar atmospheres and synthetic spectra},
+      author={Husser, T-O and Wende-von Berg, Sebastian and Dreizler, Stefan and Homeier, Derek and Reiners, Ansgar and Barman, Travis and Hauschildt, Peter H},
+      journal={Astronomy \& Astrophysics},
+      volume={553},
+      year={2013},
+      publisher={EDP Sciences}
+    }
+
+.. code-block::
+
     @article{kurucz1993atlas9,
       title={ATLAS9 Stellar Atmosphere Programs and 2km/s grid},
       author={Kurucz, R-L\_},
