@@ -12,7 +12,8 @@ setup(
     description='ExoTiC limb-darkening calculator',
     long_description="Calculate limb-darkening coefficients for specific "
                      "instruments, stars, and wavelength ranges.",
-    install_requires=['numpy', 'scipy', 'requests', 'tqdm'],
+    python_requires='>=3.8.0',
+    install_requires=['scipy>=1.8.0', 'numpy', 'requests', 'tqdm'],
     package_data={
         'grid_build.kd_trees': ['*.pickle']
     },

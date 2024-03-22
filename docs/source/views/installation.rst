@@ -3,19 +3,19 @@ Installation
 
 There is only one step (as of v3.2.0) for installing ExoTiC-LD.
 
- 1) install the package with pip:
+ 1) Using **python>=3.8**, install the package with pip:
 
     ::
 
        pip install exotic-ld
 
 And now you are ready to go. Stellar models and instrument throughput data
-are selected and downloaded automatically at runtime. These data are saved
-locally and so are only downloaded once, speeding up subsequent runs. Head
-straight to the :doc:`quick start <quick_start>` page to begin computing
-limb-darkening coefficients 🚀.
+are selected and downloaded automatically at runtime, *or custom files can
+be input by the user*. These data are saved locally and so are only downloaded
+once, speeding up subsequent runs. Head straight to the :doc:`quick start <quick_start>`
+page to begin computing limb-darkening coefficients 🚀.
 
-**Backwards compatibility/optional step**
+**Backwards compatibility/optional step:**
 
 Prior to v3.2.0, the stellar models and instrument data had to be downloaded
 manually. If you wish to not rely on an internet connection or you already
