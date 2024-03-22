@@ -4,3 +4,5 @@ matplotlib
 ipykernel
 nbsphinx
 sphinx_rtd_theme
+requests
+tqdm
