@@ -7,14 +7,17 @@
 
 **Calculate limb-darkening coefficients for specific instruments, stars, and wavelength ranges.**
 
-.. image:: https://github.com/DavoGrant/ExoTiC-LD/actions/workflows/unittests.yml/badge.svg
+.. |badge1| image:: https://github.com/DavoGrant/ExoTiC-LD/actions/workflows/unittests.yml/badge.svg
    :target: https://github.com/DavoGrant/ExoTiC-LD/actions/workflows/unittests.yml
-   
-.. image:: https://readthedocs.org/projects/exotic-ld/badge/?version=latest
+
+.. |badge2| image:: https://readthedocs.org/projects/exotic-ld/badge/?version=latest
    :target: https://exotic-ld.readthedocs.io/en/latest/?badge=latest
    
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7437681.svg
+.. |badge3| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7437681.svg
    :target: https://doi.org/10.5281/zenodo.7874921
+
+|badge1| |badge2| |badge3|
+
 |
 
 ::
