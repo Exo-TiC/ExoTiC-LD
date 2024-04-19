@@ -45,7 +45,7 @@ observation. Therefore, to compute limb-darkening coefficients requires a
 frustrating amount of “data admin”. In brief, one must search grids of stellar 
 models to find a good match with the science target in metallicity, effective 
 temperature, and surface gravity. Then retrieve the wavelength-dependent 
-sensitivity of the employed instrument. Process all these data into the correct 
+sensitivity of the employed instrument, process all these data into the correct 
 form, and then finally compute the limb-darkening coefficients.
 
 In `ExoTiC-LD` we have done all of the heavy lifting for the user, making the 
@@ -53,13 +53,13 @@ process as fast and frictionless as possible. A user simply has to `pip install`
 the code and the relevant data will be automatically downloaded at runtime and 
 the limb-darkening coefficients computed. In particular, all the stellar and 
 instrument data has been pre-processed and homogenised. Additionally, the 
-stellar model grids have been stored as tree structures, enabling the efficient 
+stellar model grids have been stored as tree structures, enabling an efficient 
 search for good matches and helpful warnings to the user.
 
 `ExoTiC-LD` thus far has predominantly been utilised in the study of exoplanet 
 atmospheres, helping to facilitate the study of Jupiter-like 
-[e.g., @Alderson:2023; @Grant:2023], Neptune-like [e.g., @Roy:2023; @Radica:2024], 
-and Earth-like exoplanets [e.g., @Moran:2023; @Kirk:2024]. Notably, it has 
+[e.g.; @Alderson:2023; @Grant:2023], Neptune-like [e.g.; @Roy:2023; @Radica:2024], 
+and Earth-like exoplanets [e.g.; @Moran:2023; @Kirk:2024]. It has 
 also been incorporated into the popular open-source JWST data reduction and 
 analysis pipeline, called `Eureka!` [@Bell:2022].
 
