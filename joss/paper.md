@@ -57,11 +57,11 @@ stellar model grids have been stored as tree structures, enabling the efficient
 search for good matches and helpful warnings to the user.
 
 `ExoTiC-LD` thus far has predominantly been utilised in the study of exoplanet 
-atmospheres, helping to facilitate the study of Jupiter-like [e.g.; @Alderson:2023; @Grant:2023], 
-Neptune-like [e.g.; @Roy:2023; @Radica:2024], and Earth-like exoplanets 
-[e.g.; @Moran:2023; @Kirk:2024]. Notably, it has also been incorporated into 
-the popular open-source JWST data reduction and analysis pipeline, called `Eureka!` 
-[@Bell:2022].
+atmospheres, helping to facilitate the study of Jupiter-like 
+[e.g., @Alderson:2023; @Grant:2023], Neptune-like [e.g., @Roy:2023; @Radica:2024], 
+and Earth-like exoplanets [e.g., @Moran:2023; @Kirk:2024]. Notably, it has 
+also been incorporated into the popular open-source JWST data reduction and 
+analysis pipeline, called `Eureka!` [@Bell:2022].
 
 Currently, the stellar models supported are phoenix [@Husser:2013], kurucz 
 [@Kurucz:1993], stagger [@Magic:2015], and MPS-ATLAS [@Kostogryz:2022; @Kostogryz:2023]. 
