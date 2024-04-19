@@ -33,7 +33,9 @@ as these planets are often studied when crossing in front of their host stars.
 As such, limb darkening is directly linked to the exoplanet signals. Limb 
 darkening is typically modelled by one of various functional forms, as outlined 
 in @Claret:2000 and @Sing:2010, and the coefficients of these functions is what 
-`ExoTiC-LD` is designed to compute.
+`ExoTiC-LD` is designed to compute. A wide variety of functional forms are 
+supported, including those benchmarked by @Espinoza:2016 as well as 
+reparameterisations suggested by @Kipping:2013.
 
 # Statement of need
 
