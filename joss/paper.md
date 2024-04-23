@@ -66,9 +66,8 @@ analysis pipeline, called `Eureka!` [@Bell:2022].
 Currently, the stellar models supported are phoenix [@Husser:2013], kurucz 
 [@Kurucz:1993], stagger [@Magic:2015], and MPS-ATLAS [@Kostogryz:2022; @Kostogryz:2023]. 
 There are also options to provide custom data if the user has their own stellar 
-models or instrument data. Similar codes are available, such as `JKTLD` 
-[@Southworth:2015], `LDTk` [@Parviainen:2015], `ExoTETHyS` [@Morello:2020], 
-and `exoCTK` [@Bourque:2021].
+models or instrument data. Other available codes include those referenced in 
+@Southworth:2015, @Parviainen:2015, @Morello:2020, and @Bourque:2021.
 
 # Acknowledgements
 
