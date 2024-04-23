@@ -73,8 +73,8 @@ models or instrument data. Other available codes include those referenced in
 
 We acknowledge contributions from Natasha Batalha, Matthew Hill, and Iva Laginja, 
 as well as testing by Taylor Bell, Lili Alderson, Daniel Valentine, Charlotte 
-Fairman, and Katy Chubb. D.G. was funded by UK Research and Innovation (UKRI) 
-under the UK government’s Horizon Europe funding guarantee as part of an ERC 
-Starter Grant [grant number EP/Y006313/1].
+Fairman, and Katy Chubb. D.G. and H.R.W was funded by UK Research and Innovation 
+(UKRI) under the UK government’s Horizon Europe funding guarantee as part of an 
+ERC Starter Grant [grant number EP/Y006313/1].
 
 # References
