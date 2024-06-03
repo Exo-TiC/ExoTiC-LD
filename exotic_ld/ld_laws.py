@@ -29,3 +29,8 @@ def nonlinear_4param_ld_law(mu, u1, u2, u3, u4):
     """ Non-linear 4-parameter limb darkening law. """
     return 1. - u1 * (1. - mu**0.5) - u2 * (1. - mu) \
            - u3 * (1. - mu**1.5) - u4 * (1. - mu**2)
+
+def power2_ld_law(mu, c, alpha):
+    """ Power-2 limb darkening law. """
+    return 1. - c * (1. - mu**alpha)
+
