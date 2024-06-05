@@ -22,7 +22,7 @@ copyright = '2024, David Grant and Hannah Wakeford'
 author = 'David Grant and Hannah Wakeford'
 
 # The full version, including alpha/beta/rc tags
-release = 'v3.0.0'
+release = 'v3.2.0'
 
 
 # -- General configuration ---------------------------------------------------
