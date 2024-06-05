@@ -45,3 +45,28 @@ limb-darkening coefficients right away.
     You can place the downloaded directory anywhere on your machine, you'll
     just need to pass the path, "path/to/exotic_ld_data", as an input when
     running the code.
+
+**Installing from source:**
+
+Alternatively, you may install ExoTiC-LD from source. This is option is primarily
+useful for those wishing to contribute to the project. The project can be cloned
+from the `GitHub repository <https://github.com/Exo-TiC/ExoTiC-LD>`_, or your
+own fork.
+
+    ::
+
+       git clone https://github.com/Exo-TiC/ExoTiC-LD.git
+
+Next, navigate into the root directory of the package and install
+
+    ::
+
+       pip install .
+
+For running the unit tests, again, navigate into the root directory of the package
+and run
+
+    ::
+
+       python -m unittest tests/test_stellar_models_framework.py
+       python -m unittest tests/test_ld_computation.py
