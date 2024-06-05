@@ -23,7 +23,7 @@ Subpackages
 -----------
 
 The available limb-darkening laws are listed here. These functions are utilised by
-the corresponding StellarLimbDarkening methods shown above. Function forms of each
+the corresponding StellarLimbDarkening methods shown above. Functional forms of each
 law can be seen by clicking into the functions.
 
 .. toctree::
