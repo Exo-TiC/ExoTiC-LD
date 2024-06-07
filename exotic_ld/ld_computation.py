@@ -8,7 +8,7 @@ from exotic_ld.ld_grids import StellarGrids
 from exotic_ld.ld_requests import download
 from exotic_ld.ld_laws import linear_ld_law, quadratic_ld_law, \
     squareroot_ld_law, nonlinear_3param_ld_law, nonlinear_4param_ld_law, \
-    kipping_ld_law
+    kipping_ld_law, power2_ld_law
 
 
 class StellarLimbDarkening(object):
@@ -306,6 +306,67 @@ class StellarLimbDarkening(object):
 
         # Fit limb-darkening law.
         return self._fit_ld_law(kipping_ld_law, mu_min, return_sigmas)
+
+
+    def compute_power2_ld_coeffs(self, wavelength_range, mode,
+                                     custom_wavelengths=None,
+                                     custom_throughput=None,
+                                     mu_min=0.10, return_sigmas=False):
+        """
+        Compute the power2 limb-darkening coefficients.
+
+        Parameters
+        ----------
+        wavelength_range : array_like, (start, end)
+            Wavelength range over which to compute the limb-darkening
+            coefficients. Wavelengths must be given in angstroms and
+            the values must fall within the supported range of the
+            corresponding instrument mode.
+        mode : string
+            Instrument mode that defines the throughput.
+            Modes supported for Hubble:
+                'HST_STIS_G430L', 'HST_STIS_G750L', 'HST_WFC3_G280p1',
+                'HST_WFC3_G280n1', 'HST_WFC3_G102', 'HST_WFC3_G141'.
+            Modes supported for JWST:
+                'JWST_NIRSpec_Prism', 'JWST_NIRSpec_G395H',
+                'JWST_NIRSpec_G395M', 'JWST_NIRSpec_G235H',
+                'JWST_NIRSpec_G235M', 'JWST_NIRSpec_G140H-f100',
+                'JWST_NIRSpec_G140M-f100', 'JWST_NIRSpec_G140H-f070',
+                'JWST_NIRSpec_G140M-f070', 'JWST_NIRISS_SOSSo1',
+                'JWST_NIRISS_SOSSo2', 'JWST_NIRCam_F322W2',
+                'JWST_NIRCam_F444', 'JWST_MIRI_LRS'.
+            Modes for photometry:
+                'Spitzer_IRAC_Ch1', 'Spitzer_IRAC_Ch2', 'TESS'.
+            Alternatively, use 'custom' mode. In this case the custom
+            wavelength and custom throughput must also be specified.
+        custom_wavelengths : array_like, optional
+            Wavelengths corresponding to custom_throughput [angstroms].
+        custom_throughput : array_like, optional
+            Throughputs corresponding to custom_wavelengths.
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, c2) : tuple
+                Limb-darkening coefficients for the power2 law.
+        else:
+            ((c1, c2), (c1_sigma, c2_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the power2 law
+                and uncertainties on each coefficient.
+
+        """
+        # Compute I(mu) for a given response function.
+        self._integrate_I_mu(wavelength_range, mode,
+                             custom_wavelengths, custom_throughput)
+
+        # Fit limb-darkening law.
+        return self._fit_ld_law(power2_ld_law, mu_min, return_sigmas)
+
 
     def compute_squareroot_ld_coeffs(self, wavelength_range, mode,
                                      custom_wavelengths=None,
