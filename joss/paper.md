@@ -42,11 +42,12 @@ reparameterisations suggested by @Kipping:2013.
 Stellar limb darkening depends on the type of star, the wavelengths of light 
 being observed, and the sensitivity of the instrument/telescope performing the 
 observation. Therefore, to compute limb-darkening coefficients requires a 
-frustrating amount of “data admin”. In brief, one must search grids of stellar 
-models to find a good match with the science target in metallicity, effective 
-temperature, and surface gravity. Then retrieve the wavelength-dependent 
-sensitivity of the employed instrument, process all these data into the correct 
-form, and then finally compute the limb-darkening coefficients.
+frustrating amount of “data admin”. In brief, one starts with a search through 
+grids of stellar models to find a good match with the science target in 
+metallicity, effective temperature, and surface gravity. Then, one must retrieve 
+the wavelength-dependent sensitivity of the employed instrument, process all 
+these data into the correct form, and then finally compute the limb-darkening 
+coefficients.
 
 In `ExoTiC-LD` we have done all of the heavy lifting for the user, making the 
 process as fast and frictionless as possible. A user simply has to `pip install` 
@@ -63,7 +64,7 @@ and Earth-like exoplanets [e.g., @Moran:2023; @Kirk:2024]. It has
 also been incorporated into the popular open-source JWST data reduction and 
 analysis pipeline, called `Eureka!` [@Bell:2022].
 
-Currently, the stellar models supported are phoenix [@Husser:2013], kurucz 
+Currently, the stellar models supported are PHOENIX [@Husser:2013], kurucz 
 [@Kurucz:1993], stagger [@Magic:2015], and MPS-ATLAS [@Kostogryz:2022; @Kostogryz:2023]. 
 There are also options to provide custom data if the user has their own stellar 
 models or instrument data. Other available codes include those referenced in 
