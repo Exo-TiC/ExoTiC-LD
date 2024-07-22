@@ -50,7 +50,7 @@ these data into a cohesive form, and then finally compute the limb-darkening
 coefficients.
 
 Previous software has made calculating limb-darkening coefficients available 
-to the community [e.g., @Southworth:2015; @Parviainen:2015; @Morello:2020; @Bourque:2021], 
+to the community [e.g., @Southworth:2008; @Parviainen:2015; @Morello:2020; @Bourque:2021], 
 albeit with varying degrees of installation complexity and access to stellar and 
 instrument data. In `ExoTiC-LD` we have done all of the heavy lifting for the user, 
 making the process as fast and frictionless as possible. A user simply has to `pip install` 
