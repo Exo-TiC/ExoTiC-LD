@@ -144,6 +144,13 @@ class TestLDC(unittest.TestCase):
             self.assertEqual(I_mu[0], 1.)
             self.assertFalse(np.any(np.diff(I_mu) > 0.))
 
+            # power2 law.
+            q1, q2 = sld_object.compute_power2_ld_coeffs(
+                wavelength_range=wr, mode=im)
+            I_mu = power2_ld_law(test_mu, q1, q2)
+            self.assertEqual(I_mu[0], 1.)
+            self.assertFalse(np.any(np.diff(I_mu) > 0.))
+
             # Square-root law.
             u1, u2 = sld_object.compute_squareroot_ld_coeffs(
                 wavelength_range=wr, mode=im)
