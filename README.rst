@@ -13,8 +13,8 @@
 .. |badge2| image:: https://readthedocs.org/projects/exotic-ld/badge/?version=latest
    :target: https://exotic-ld.readthedocs.io/en/latest/?badge=latest
    
-.. |badge3| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7437681.svg
-   :target: https://doi.org/10.5281/zenodo.7874921
+.. |badge3| image:: https://zenodo.org/badge/458261370.svg
+   :target: https://zenodo.org/doi/10.5281/zenodo.6809898
 
 |badge1| |badge2| |badge3|
 
