@@ -2,21 +2,22 @@ Citation
 ========
 
 If you make use of ExoTiC-LD in your research, please cite
-`Grant and Wakeford 2022 <https://doi.org/10.5281/zenodo.7437681>`_:
+`Grant and Wakeford 2024 <https://doi.org/10.21105/joss.06816>`_:
 
 .. code-block::
 
-        @software{david_grant_2022_7437681,
-          author       = {David Grant and
-                          Hannah R. Wakeford},
-          title        = {Exo-TiC/ExoTiC-LD: ExoTiC-LD v3.0.0},
-          month        = dec,
-          year         = 2022,
-          publisher    = {Zenodo},
-          version      = {v3.0.0},
-          doi          = {10.5281/zenodo.7437681},
-          url          = {https://doi.org/10.5281/zenodo.7437681}
-        }
+    @article{Grant2024,
+      title = {ExoTiC-LD: thirty seconds to stellar limb-darkening coefficients},
+      author = {David Grant and Hannah R. Wakeford},
+      journal = {Journal of Open Source Software},
+      publisher = {The Open Journal},
+      year = {2024},
+      volume = {9},
+      number = {100},
+      pages = {6816},
+      doi = {10.21105/joss.06816},
+      url = {https://doi.org/10.21105/joss.06816}
+    }
 
 **Stellar models**
 
