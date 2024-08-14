@@ -5,8 +5,17 @@ import pickle
 from pathlib import Path
 import os
 from glob import glob
+from scipy.optimize import curve_fit
 
 from exotic_ld import StellarLimbDarkening
+from exotic_ld.ld_laws import (
+    linear_ld_law,
+    quadratic_ld_law,
+    squareroot_ld_law,
+    nonlinear_3param_ld_law,
+    nonlinear_4param_ld_law,
+    kipping_ld_law,
+)
 
 
 class PrecomputedLimbDarkening:
@@ -142,6 +151,13 @@ class PrecomputedLimbDarkening:
 
         if self.verbose > 1:
             print("Ready!")
+
+    def __repr__(self):
+        return (
+            f"PrecomputedLimbDarkening(ld_model={self.ld_model}, "
+            f"mode={self.mode}, "
+            f"wavelength_range={self.wavelength_range}, "
+        )
 
     def _get_grid_mus(self):
         stellar_spectra = glob(
@@ -416,6 +432,59 @@ class PrecomputedLimbDarkening:
 
         return None
 
+    def _fit_ld_law(self, I_mu, ld_law_func, mu_min, return_sigmas):
+        # exact copy of StellarLimbDarkening._fit_ld_law(),
+        # just with I_mu now as an input
+
+        # Truncate mu range to be fitted.
+        mu_mask = self.mus >= mu_min
+
+        if np.sum(mu_mask) < 2:
+            raise ValueError(
+                "mu_min={} set too high, must be >= 2 mu "
+                "values remaining.".format(mu_min)
+            )
+
+        if not ld_law_func == kipping_ld_law:
+            if self.verbose > 1:
+                print(
+                    "Fitting limb-darkening law to {} I(mu) data points "
+                    "where {} <= mu <= 1, with the Levenberg-Marquardt "
+                    "algorithm.".format(np.sum(mu_mask), mu_min)
+                )
+
+            # Fit limb-darkening law: Levenberg-Marquardt (LM), guess=1.
+            popt, pcov = curve_fit(
+                ld_law_func, self.mus[mu_mask], I_mu[mu_mask], method="lm"
+            )
+
+        else:
+            if self.verbose > 1:
+                print(
+                    "Fitting limb-darkening law to {} I(mu) data points "
+                    "where {} <= mu <= 1, with the constrained Trust-Region "
+                    "Reflective algorithm.".format(np.sum(mu_mask), mu_min)
+                )
+
+            # Fit limb-darkening law: Trust-Region Reflective (TRF), guess=0.5.
+            # For the Kipping law, constrain q1, q2 to [0, 1].
+            popt, pcov = curve_fit(
+                kipping_ld_law,
+                self.mus[mu_mask],
+                I_mu[mu_mask],
+                p0=(0.5, 0.5),
+                bounds=((0, 0), (1, 1)),
+                method="trf",
+            )
+
+        if self.verbose > 1:
+            print("Fit done, resulting coefficients are {}.".format(popt))
+
+        if return_sigmas:
+            return tuple(popt), tuple(np.sqrt(np.diag(pcov)))
+        else:
+            return tuple(popt)
+
     def get_I_mu(self, M_H, Teff, logg, interpolate_type=None):
         """
         Compute the stellar intensity profile for a given set of stellar parameters.
@@ -548,6 +617,228 @@ class PrecomputedLimbDarkening:
             c = c0 * (1 - zd) + c1 * zd
 
             return c
+
+    ####################################################################################
+    # the limb darkening laws, all copied from StellarLimbDarkening
+    # except with fitxed wavelengths/mode and free M_H, Teff, logg
+    ####################################################################################
+    def compute_linear_ld_coeffs(
+        self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
+    ):
+        """
+        Compute the linear limb-darkening coefficients.
+
+        Parameters
+        ----------
+        M_H : float
+            Stellar metallicity [dex].
+        Teff : int
+            Stellar effective temperature [kelvin].
+        logg : float
+            Stellar log(g) [dex].
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, ) : tuple
+                Limb-darkening coefficients for the linear law.
+        else:
+            ((c1, ), (c1_sigma, )) : tuple of tuples
+                Limb-darkening coefficients for the linear law
+                and uncertainties on each coefficient.
+
+        """
+
+        I_mu = self.get_I_mu(M_H, Teff, logg)
+        return self._fit_ld_law(I_mu, linear_ld_law, mu_min, return_sigmas)
+
+    def compute_quadratic_ld_coeffs(
+        self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
+    ):
+        """
+        Compute the quadratic limb-darkening coefficients.
+
+        Parameters
+        ----------
+        M_H : float
+            Stellar metallicity [dex].
+        Teff : int
+            Stellar effective temperature [kelvin].
+        logg : float
+            Stellar log(g) [dex].
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, c2) : tuple
+                Limb-darkening coefficients for the quadratic law.
+        else:
+            ((c1, c2), (c1_sigma, c2_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the quadratic law
+                and uncertainties on each coefficient.
+
+        """
+        I_mu = self.get_I_mu(M_H, Teff, logg)
+        return self._fit_ld_law(I_mu, quadratic_ld_law, mu_min, return_sigmas)
+
+    def compute_kipping_ld_coeffs(
+        self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
+    ):
+        """
+        Compute the Kipping limb-darkening coefficients. These are based on
+        a reparameterisation of the quadratic law as described in
+        Kipping 2013, MNRAS, 435, 2152. See equations 15 -- 18:
+
+        u1 = 2 * q1^0.5 * q2
+        u2 = q1^0.5 * (1 - 2 * q2)
+
+        or,
+
+        q1 = (u1 + u2)^2,
+        q2 = 0.5 * u1 * (u1 + u2)^-1.
+
+        Parameters
+        ----------
+        M_H : float
+            Stellar metallicity [dex].
+        Teff : int
+            Stellar effective temperature [kelvin].
+        logg : float
+            Stellar log(g) [dex].
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, c2) : tuple
+                Limb-darkening coefficients for the Kipping law.
+        else:
+            ((c1, c2), (c1_sigma, c2_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the Kipping law
+                and uncertainties on each coefficient.
+
+        """
+        I_mu = self.get_I_mu(M_H, Teff, logg)
+        return self._fit_ld_law(I_mu, kipping_ld_law, mu_min, return_sigmas)
+
+    def compute_squareroot_ld_coeffs(
+        self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
+    ):
+        """
+        Compute the square root limb-darkening coefficients.
+
+        Parameters
+        ----------
+        M_H : float
+            Stellar metallicity [dex].
+        Teff : int
+            Stellar effective temperature [kelvin].
+        logg : float
+            Stellar log(g) [dex].
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, c2) : tuple
+                Limb-darkening coefficients for the square root law.
+        else:
+            ((c1, c2), (c1_sigma, c2_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the square root law
+                and uncertainties on each coefficient.
+
+        """
+        I_mu = self.get_I_mu(M_H, Teff, logg)
+        return self._fit_ld_law(I_mu, squareroot_ld_law, mu_min, return_sigmas)
+
+    def compute_3_parameter_non_linear_ld_coeffs(
+        self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
+    ):
+        """
+        Compute the three-parameter non-linear limb-darkening coefficients.
+
+        Parameters
+        ----------
+        M_H : float
+            Stellar metallicity [dex].
+        Teff : int
+            Stellar effective temperature [kelvin].
+        logg : float
+            Stellar log(g) [dex].
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, c2, c3) : tuple
+                Limb-darkening coefficients for the three-parameter
+                non-linear law.
+        else:
+            ((c1, c2, c3), (c1_sigma, c2_sigma, c3_sigma)) : tuple of tuples
+                Limb-darkening coefficients for the three-parameter
+                non-linear law and uncertainties on each coefficient.
+
+        """
+        I_mu = self.get_I_mu(M_H, Teff, logg)
+        return self._fit_ld_law(I_mu, nonlinear_3param_ld_law, mu_min, return_sigmas)
+
+    def compute_4_parameter_non_linear_ld_coeffs(
+        self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
+    ):
+        """
+        Compute the four-parameter non-linear limb-darkening coefficients.
+
+        Parameters
+        ----------
+        M_H : float
+            Stellar metallicity [dex].
+        Teff : int
+            Stellar effective temperature [kelvin].
+        logg : float
+            Stellar log(g) [dex].
+        mu_min : float
+            Minimum value of mu to include in the fitting process.
+        return_sigmas : boolean
+            Return the uncertainties, or standard deviations, of each
+            fitted limb-darkening coefficient. Default: False.
+
+        Returns
+        -------
+        if return_sigmas == False:
+            (c1, c2, c3, c4) : tuple
+                Limb-darkening coefficients for the three-parameter
+                non-linear law.
+        else:
+            ((c1, c2, c3, c4), (c1_sigma, c2_sigma, c3_sigma, c4_sigma)) :
+                tuple of tuples
+                Limb-darkening coefficients for the four-parameter
+                non-linear law and uncertainties on each coefficient.
+
+        """
+        I_mu = self.get_I_mu(M_H, Teff, logg)
+        return self._fit_ld_law(I_mu, nonlinear_4param_ld_law, mu_min, return_sigmas)
 
     @staticmethod
     def _verify_local_data(ld_model, ld_data_path):
