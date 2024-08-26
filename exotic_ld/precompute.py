@@ -97,8 +97,8 @@ class PrecomputedLimbDarkening:
             verbose=2,
             save_stellar_grid=None
         )
-    >>> i_mu1 = sld.get_I_mu(mh=0.1, teff=5240, logg4.2, interpolate_type="trilinear")
-    >>> i_mu2 = sld.get_I_mu(mh=0.1, teff=5280, logg4.2, interpolate_type="trilinear")
+    >>> i_mu1 = sld.get_I_mu(mh=0.1, teff=5240, logg=4.2, interpolate_type="trilinear")
+    >>> i_mu2 = sld.get_I_mu(mh=0.1, teff=5280, logg=4.2, interpolate_type="trilinear")
 
     """
 
@@ -160,10 +160,12 @@ class PrecomputedLimbDarkening:
         )
 
     def _get_grid_mus(self):
+        # see if any stellar spectra from the grid have already been downloaded
         stellar_spectra = glob(
             os.path.join(f"{self.ld_data_path}/{self.ld_model}/" "**", "*.dat"),
             recursive=True,
         )
+        # if not, download one representative model to get the mu values
         if len(stellar_spectra) == 0:
             if self.verbose > 1:
                 print("downloading one representative model to get the mu values")
@@ -181,11 +183,14 @@ class PrecomputedLimbDarkening:
             self.mus = np.loadtxt(stellar_spectra[0], skiprows=1, max_rows=1)
 
     def _set_wavelengths(self):
+        if self.verbose > 1:
+            print("setting the wavelength range...")
         if self.mode == "custom":
             assert (self.custom_wavelengths is not None) & (
                 self.custom_throughput is not None
             ), "If using a custom mode, custom_wavelengths and custom_throughput are required"
         if self.wavelength_range is None:
+            # get the sensitivity info for the mode
             if self.mode != "custom":
                 z = StellarLimbDarkening(
                     M_H=0.0,
@@ -200,19 +205,21 @@ class PrecomputedLimbDarkening:
                     z._read_sensitivity_data(mode=self.mode)
                 )
 
+                # set the wavelength range to the max and min of the bandpass
                 self.wavelength_range = [
                     np.min(sensitivity_wavelengths),
                     np.max(sensitivity_wavelengths),
                 ]
             else:
                 self.wavelength_range = [
-                    np.min(custom_wavelengths),
-                    np.max(custom_wavelengths),
+                    np.min(self.custom_wavelengths),
+                    np.max(self.custom_wavelengths),
                 ]
             if self.verbose > 1:
                 print(
                     f"\nNo wavelength range provided, so using the max and min of the provided mode ({self.mode}): {self.wavelength_range} angstrom"
                 )
+        # create a cache file name that's unique to the grid, mode, and wavelength range
         w = (
             str(int(self.wavelength_range[0]))
             + "_"
@@ -223,7 +230,8 @@ class PrecomputedLimbDarkening:
         )
 
     def _set_save_behavior(self):
-        # setup the save behavior
+        # choose whether to save the downloaded stellar spectra
+        # necessary since some grids are huge
         if self.save_stellar_grid is None:
             if self.ld_model == "kurucz":
                 self.save_stellar_grid = True
@@ -260,10 +268,12 @@ class PrecomputedLimbDarkening:
             self.tree = pickle.load(f)
 
     def _load_cache(self):
+        # try to load a pre-saved cache
         try:
             self.precomputed_mus = np.load(self.cache_file)
             if self.verbose > 1:
                 print(f"\ncache loaded from: {self.cache_file}")
+        # if this grid/mode/wavelength range combo hasn't been computed yet, build its cache
         except FileNotFoundError:
             if self.verbose > 0:
                 print(
@@ -281,6 +291,7 @@ class PrecomputedLimbDarkening:
 
         data = np.zeros((len(leafs), len(self.mus)))
         c = 0
+        # loop through every stellar model in the grid, saving the I_mu values
         for model in tqdm(leafs):
             metal, temp, logg = model
 
@@ -305,6 +316,7 @@ class PrecomputedLimbDarkening:
                 custom_throughput=self.custom_throughput,
             )
 
+            # if you don't want to save the stellar spectra, delete them
             if not self.save_stellar_grid:
                 metal_str = str(metal).replace("-0.0", "0.0")
                 temp_str = (
@@ -321,7 +333,7 @@ class PrecomputedLimbDarkening:
                     os.remove(local_file)
 
             data[c] = sld.I_mu
-            c += 1  # don't like the way tqdm looks with enumerate
+            c += 1  # don't like the way tqdm looks when using enumerate, so using this instead
 
         if self.verbose > 1:
             print("saving the completed cache")
@@ -333,6 +345,8 @@ class PrecomputedLimbDarkening:
         return data
 
     def _retrieve_mus(self, mh, teff, logg):
+        # get the I_mu values for a given set of stellar parameters
+        # the cache index is the same as the KD tree index
         x = np.array([mh, teff, logg]) / self.scale
         _, idx = self.tree.query(x, k=1)
         return self.precomputed_mus[idx]
@@ -602,8 +616,8 @@ class PrecomputedLimbDarkening:
             c111 = self._retrieve_mus(x1, y1, z1)
 
             # Compute trilinear interpolation.
-            xd = (mh - x0) / (x1 - x0) if x0 != x1 else 0.0
-            yd = (teff - y0) / (y1 - y0) if y0 != y1 else 0.0
+            xd = (M_H - x0) / (x1 - x0) if x0 != x1 else 0.0
+            yd = (Teff - y0) / (y1 - y0) if y0 != y1 else 0.0
             zd = (logg - z0) / (z1 - z0) if z0 != z1 else 0.0
 
             c00 = c000 * (1 - xd) + c100 * xd
@@ -620,7 +634,7 @@ class PrecomputedLimbDarkening:
 
     ####################################################################################
     # the limb darkening laws, all copied from StellarLimbDarkening
-    # except with fitxed wavelengths/mode and free M_H, Teff, logg
+    # except with fixed wavelengths/mode and free M_H, Teff, logg
     ####################################################################################
     def compute_linear_ld_coeffs(
         self, M_H, Teff, logg, mu_min=0.10, return_sigmas=False
@@ -846,7 +860,7 @@ class PrecomputedLimbDarkening:
         Check if you have all of the files downloaded for a given stellar grid.
 
         Not really necessary since you could download each file one-by-one as needed,
-        but after bulk downloading the grids it was good to check that nothing failed.
+        but after bulk downloading the grids it was good to check that everything is there.
         """
 
         # get the KD-tree associated with that grid
