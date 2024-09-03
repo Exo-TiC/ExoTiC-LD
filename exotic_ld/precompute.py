@@ -306,8 +306,8 @@ class PrecomputedLimbDarkening:
         # loop through every stellar model in the grid, saving the I_mu values
         for model in tqdm(leafs):
             # # skip the broken phoenix models from issue #55
-            # if self.ld_model == "phoenix" and tuple(model) in broken_phoenix:
-            #     data[c] = np.zeros(len(self.mus))*np.nan
+            if self.ld_model == "phoenix" and tuple(model) in broken_phoenix:
+                data[c] = np.zeros(len(self.mus))*np.nan
 
             metal, temp, logg = model
 
