@@ -31,6 +31,7 @@ to the modelled :math:`I(\mu)` profile.
    Supported instruments <views/supported_instruments>
    Tutorials <views/tutorials>
    API <views/api/api>
+   Contributing <views/contributing>
    Citation <views/citation>
 
 Acknowledgements
@@ -43,7 +44,8 @@ improvements by Iva Laginja. The git history associated with the original
 implementation can be found in the `ExoTiC-ISM <https://github.com/Exo-TiC/ExoTiC-ISM>`_
 package from which this is a spin-off repository. We also thank Natasha Batalha
 for providing the JWST throughput information from their PandExo package and
-to Lili Alderson for reviewing and testing.
+to Lili Alderson for reviewing and testing. Anyone can get involved by following
+the :doc:`contributing guidelines <views/contributing>`.
 
 If you make use of ExoTiC-LD in your research, see the :doc:`citation page <views/citation>`
 for info on how to cite this package and the underlying stellar models.
