@@ -305,54 +305,50 @@ class PrecomputedLimbDarkening:
         c = 0
         # loop through every stellar model in the grid, saving the I_mu values
         for model in tqdm(leafs):
-            # much cruder tmp fix
-            try:
-                # # skip the broken phoenix models from issue #55
-                # if self.ld_model == "phoenix" and tuple(model) in broken_phoenix:
-                #     data[c] = np.zeros(len(self.mus))*np.nan
+            # # skip the broken phoenix models from issue #55
+            # if self.ld_model == "phoenix" and tuple(model) in broken_phoenix:
+            #     data[c] = np.zeros(len(self.mus))*np.nan
 
-                metal, temp, logg = model
+            metal, temp, logg = model
 
-                sld = StellarLimbDarkening(
-                    M_H=metal,
-                    Teff=temp,
-                    logg=logg,
-                    ld_model=self.ld_model,
-                    ld_data_path=self.ld_data_path,
-                    interpolate_type="nearest",  # they should all be exact matches
-                    custom_wavelengths=None,
-                    custom_mus=None,
-                    custom_stellar_model=None,
-                    ld_data_version=self.ld_data_version,
-                    verbose=self.verbose,
+            sld = StellarLimbDarkening(
+                M_H=metal,
+                Teff=temp,
+                logg=logg,
+                ld_model=self.ld_model,
+                ld_data_path=self.ld_data_path,
+                interpolate_type="nearest",  # they should all be exact matches
+                custom_wavelengths=None,
+                custom_mus=None,
+                custom_stellar_model=None,
+                ld_data_version=self.ld_data_version,
+                verbose=self.verbose,
+            )
+
+            sld._integrate_I_mu(
+                wavelength_range=self.wavelength_range,
+                mode=self.mode,
+                custom_wavelengths=self.custom_wavelengths,
+                custom_throughput=self.custom_throughput,
+            )
+
+            # if you don't want to save the stellar spectra, delete them
+            if not self.save_stellar_grid:
+                metal_str = str(metal).replace("-0.0", "0.0")
+                temp_str = (
+                    str(int(round(temp / 50) * 50))
+                    if self.ld_model != "stagger"
+                    else str(int(temp))
                 )
-
-                sld._integrate_I_mu(
-                    wavelength_range=self.wavelength_range,
-                    mode=self.mode,
-                    custom_wavelengths=self.custom_wavelengths,
-                    custom_throughput=self.custom_throughput,
+                logg_str = f"{logg:.1f}"
+                local_file = (
+                    self.ld_data_path
+                    + f"/{self.ld_model}/MH{metal_str}/teff{temp_str}/logg{logg_str}/{self.ld_model}_spectra.dat"
                 )
+                if os.path.isfile(local_file):
+                    os.remove(local_file)
 
-                # if you don't want to save the stellar spectra, delete them
-                if not self.save_stellar_grid:
-                    metal_str = str(metal).replace("-0.0", "0.0")
-                    temp_str = (
-                        str(int(round(temp / 50) * 50))
-                        if self.ld_model != "stagger"
-                        else str(int(temp))
-                    )
-                    logg_str = f"{logg:.1f}"
-                    local_file = (
-                        self.ld_data_path
-                        + f"/{self.ld_model}/MH{metal_str}/teff{temp_str}/logg{logg_str}/{self.ld_model}_spectra.dat"
-                    )
-                    if os.path.isfile(local_file):
-                        os.remove(local_file)
-
-                data[c] = sld.I_mu
-            except:
-                data[c] = np.zeros(len(self.mus)) * np.nan
+            data[c] = sld.I_mu
             c += 1  # don't like the way tqdm looks when using enumerate, so using this instead
 
         if self.verbose > 1:
