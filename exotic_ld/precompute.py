@@ -17,6 +17,18 @@ from exotic_ld.ld_laws import (
     kipping_ld_law,
 )
 
+# from https://github.com/Exo-TiC/ExoTiC-LD/issues/55
+broken_phoenix = [
+    (-1.5, 6900, 5.0),
+    (-1.5, 6700, 2.5),
+    (-1.5, 6700, 4.0),
+    (-1.5, 6700, 5.0),
+    (-1.5, 6700, 5.5),
+    (-1.0, 2600, 0.0),
+    (-0.5, 2500, 0.0),
+    (0.0, 2500, 5.0)
+]
+
 
 class PrecomputedLimbDarkening:
     """
@@ -293,6 +305,11 @@ class PrecomputedLimbDarkening:
         c = 0
         # loop through every stellar model in the grid, saving the I_mu values
         for model in tqdm(leafs):
+
+            # skip the broken phoenix models from issue #55
+            if self.ld_model == "phoenix" and tuple(model) in broken_phoenix:
+                data[c] = np.zeros(len(self.mus))*np.nan
+
             metal, temp, logg = model
 
             sld = StellarLimbDarkening(
