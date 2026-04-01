@@ -96,3 +96,6 @@ def power2_ld_law(mu, c, alpha):
     """ Power-2 limb darkening law. """
     return 1. - c * (1. - mu**alpha)
 
+def power_ld_law(mu, alpha):
+    """ Power limb darkening law. """
+    return mu**alpha
